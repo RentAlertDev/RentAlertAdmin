@@ -14,7 +14,11 @@ import { Pagination } from '@/shared/ui/pagination'
 export function JobsPage() {
 	const [page, setPage] = useState(0)
 	const [all, setAll] = useState(true)
-	const [confirm, setConfirm] = useState(false)
+	const [confirm, setConfirm] = useState<{
+		url: string
+		title: string
+		description: string
+	} | null>(null)
 	const qc = useQueryClient()
 	const jobs = useQuery({
 		queryKey: ['jobs', page],
@@ -33,6 +37,8 @@ export function JobsPage() {
 		},
 		onError: () => toast.error('Не удалось запустить задачу')
 	})
+	const requestRun = (url: string, title: string, description: string) =>
+		setConfirm({ url, title, description })
 	return (
 		<div className='space-y-6'>
 			<div>
@@ -46,14 +52,26 @@ export function JobsPage() {
 					icon={<Trash2 />}
 					title='Очистка данных'
 					text='Удаление устаревших данных'
-					action={() => setConfirm(true)}
+					action={() =>
+						requestRun(
+							'/job-settings/cleanUp',
+							'Запустить очистку данных?',
+							'Будет запущена фоновая задача очистки устаревших данных.'
+						)
+					}
 					loading={run.isPending}
 				/>
 				<Action
 					icon={<RefreshCcw />}
 					title='Синхронизация кэша'
 					text='Обновление данных в кэше'
-					action={() => run.mutate('/job-settings/cacheSync')}
+					action={() =>
+						requestRun(
+							'/job-settings/cacheSync',
+							'Запустить синхронизацию кэша?',
+							'Кэш будет синхронизирован с актуальными данными.'
+						)
+					}
 					loading={run.isPending}
 				/>
 				<div className='card p-5'>
@@ -74,8 +92,15 @@ export function JobsPage() {
 					</label>
 					<button
 						className='btn btn-primary w-full'
+						disabled={run.isPending}
 						onClick={() =>
-							run.mutate(`/job-settings/cleanCache?all=${all}`)
+							requestRun(
+								`/job-settings/cleanCache?all=${all}`,
+								'Запустить очистку кэша?',
+								all
+									? 'Весь кэш будет очищен.'
+									: 'Будут очищены только устаревшие записи кэша.'
+							)
 						}
 					>
 						Запустить
@@ -85,7 +110,13 @@ export function JobsPage() {
 					icon={<WalletCards />}
 					title='Курсы валют'
 					text='Получить актуальные курсы'
-					action={() => run.mutate('/job-settings/currency-rates')}
+					action={() =>
+						requestRun(
+							'/job-settings/currency-rates',
+							'Запустить синхронизацию курсов?',
+							'Будет запущена синхронизация курсов валют.'
+						)
+					}
 					loading={run.isPending}
 				/>
 			</section>
@@ -158,26 +189,27 @@ export function JobsPage() {
 			</section>
 			{confirm && (
 				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
-					<div className='card max-w-md p-6'>
-						<h2 className='text-xl font-bold'>
-							Запустить очистку?
+					<div className='card max-w-md p-6' role='dialog' aria-modal='true' aria-labelledby='job-confirm-title'>
+						<h2 id='job-confirm-title' className='text-xl font-bold'>
+							{confirm.title}
 						</h2>
 						<p className='my-3 text-slate-500'>
-							Будет запущена фоновая задача очистки данных.
-							Операцию нельзя отменить из панели.
+							{confirm.description} Операцию нельзя отменить из панели.
 						</p>
 						<div className='flex justify-end gap-2'>
 							<button
 								className='btn btn-soft'
-								onClick={() => setConfirm(false)}
+								onClick={() => setConfirm(null)}
 							>
 								Отмена
 							</button>
 							<button
 								className='btn bg-red-600 text-white'
+								disabled={run.isPending}
 								onClick={() => {
-									setConfirm(false)
-									run.mutate('/job-settings/cleanUp')
+									const action = confirm
+									setConfirm(null)
+									run.mutate(action.url)
 								}}
 							>
 								Запустить

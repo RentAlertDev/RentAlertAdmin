@@ -56,6 +56,7 @@ export type UserProfile = {
 	username: string
 	photoUrl?: string
 	botStatus: 'ACTIVE' | 'PAUSED' | 'STOPPED'
+	roleName?: 'USER' | 'ADMIN' | 'BLOCKED'
 	lastLogin?: string
 	quietFrom?: string
 	quietTo?: string

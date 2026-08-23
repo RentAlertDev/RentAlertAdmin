@@ -1,9 +1,11 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { ArrowDownUp, ArrowLeft, CheckCircle2, CircleOff, XCircle } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowDownUp, ArrowLeft, CheckCircle2, CircleOff, Trash2, XCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
@@ -21,6 +23,9 @@ const statusInfo = {
 export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 	const [page, setPage] = useState(0)
 	const [sort, setSort] = useState('createdAt,asc')
+	const [confirmDelete, setConfirmDelete] = useState(false)
+	const queryClient = useQueryClient()
+	const router = useRouter()
 	const detail = useQuery({
 		queryKey: ['broadcast', broadcastId],
 		queryFn: () => api.get<Broadcast>(`/notifications/broadcasts/${broadcastId}`).then(response => response.data)
@@ -29,6 +34,15 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 		queryKey: ['broadcast-recipients', broadcastId, page, sort],
 		queryFn: () => api.get<Page<BroadcastRecipient>>(`/notifications/broadcasts/${broadcastId}/recipients`, { params: { page, size: 50, sort } }).then(response => response.data),
 		enabled: !detail.isLoading && !detail.isError
+	})
+	const removeBroadcast = useMutation({
+		mutationFn: () => api.delete(`/notifications/broadcasts/${broadcastId}`),
+		onSuccess: () => {
+			toast.success('Рассылка удалена из истории')
+			queryClient.invalidateQueries({ queryKey: ['broadcasts'] })
+			router.replace(APP_ROUTES.ADMIN.BROADCASTS)
+		},
+		onError: () => toast.error('Не удалось удалить рассылку')
 	})
 	const toggleSort = (field: string) => {
 		setPage(0)
@@ -46,9 +60,12 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 	const broadcast = detail.data
 	return (
 		<div className='space-y-6'>
-			<div className='flex items-center gap-3'>
+			<div className='flex flex-wrap items-center justify-between gap-3'>
+				<div className='flex items-center gap-3'>
 				<Link href={APP_ROUTES.ADMIN.BROADCASTS} className='btn btn-soft !p-2' aria-label='Назад к рассылкам' title='Назад к рассылкам'><ArrowLeft size={18} /></Link>
 				<div><h1 className='text-3xl font-bold'>Рассылка #{broadcast.id}</h1><p className='mt-1 text-slate-500'>{formatDateTime(broadcast.createdAt)}</p></div>
+				</div>
+				<button className='btn bg-red-600 text-white hover:bg-red-700' disabled={removeBroadcast.isPending} onClick={() => setConfirmDelete(true)}><Trash2 size={17} /> Удалить рассылку</button>
 			</div>
 			<section className='card p-6'>
 				<div className='grid gap-5 md:grid-cols-4'>
@@ -70,6 +87,13 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 				)}
 				<Pagination page={page} totalPages={recipients.data?.totalPages || 0} onChange={setPage} />
 			</section>
+			{confirmDelete && <div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5' role='presentation' onMouseDown={event => event.target === event.currentTarget && setConfirmDelete(false)}>
+				<div className='card w-full max-w-md p-6' role='dialog' aria-modal='true' aria-labelledby='broadcast-delete-title'>
+					<h2 id='broadcast-delete-title' className='text-xl font-bold'>Удалить рассылку?</h2>
+					<p className='my-3 text-slate-500'>Рассылка и все результаты по получателям будут удалены без возможности восстановления.</p>
+					<div className='flex justify-end gap-2'><button className='btn btn-soft' onClick={() => setConfirmDelete(false)}>Отмена</button><button className='btn bg-red-600 text-white hover:bg-red-700' disabled={removeBroadcast.isPending} onClick={() => removeBroadcast.mutate()}><Trash2 size={17} />{removeBroadcast.isPending ? 'Удаление...' : 'Удалить'}</button></div>
+				</div>
+			</div>}
 		</div>
 	)
 }
