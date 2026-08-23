@@ -65,7 +65,7 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 					<div className='table-wrap'><table className='data-table'><thead><tr><th>{sortButton('Пользователь', 'username')}</th><th>{sortButton('Статус', 'status')}</th><th>Причина</th><th>{sortButton('Дата', 'createdAt')}</th></tr></thead><tbody>{recipients.data.content.map(recipient => {
 						const info = statusInfo[recipient.status]
 						const Icon = info.icon
-						return <tr key={recipient.id}><td><b>@{recipient.username || 'без username'}</b><div className='text-xs text-slate-400'>ID {recipient.userId}</div>{recipient.photoUrl && <div className='max-w-xs truncate text-xs text-slate-400'>{recipient.photoUrl}</div>}</td><td><span className={`badge gap-1 ${info.className}`}><Icon size={14} />{info.label}</span></td><td className='max-w-md whitespace-normal break-words'>{recipient.errorMessage || '—'}</td><td className='whitespace-nowrap'>{formatDateTime(recipient.createdAt)}</td></tr>
+						return <tr key={recipient.id}><td><Link className='block hover:text-indigo-600' href={APP_ROUTES.ADMIN.user(recipient.userId)}><b>@{recipient.username || 'без username'}</b><div className='text-xs text-slate-400'>ID {recipient.userId}</div>{recipient.photoUrl && <div className='max-w-xs truncate text-xs text-slate-400'>{recipient.photoUrl}</div>}</Link></td><td><span className={`badge gap-1 ${info.className}`}><Icon size={14} />{info.label}</span></td><td className='max-w-md whitespace-normal break-words'>{recipient.errorMessage || '—'}</td><td className='whitespace-nowrap'>{formatDateTime(recipient.createdAt)}</td></tr>
 					})}</tbody></table></div>
 				)}
 				<Pagination page={page} totalPages={recipients.data?.totalPages || 0} onChange={setPage} />

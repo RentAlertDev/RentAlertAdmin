@@ -65,13 +65,15 @@ export function BroadcastsPage() {
 				{broadcasts.isLoading ? <LoadingState /> : broadcasts.isError ? <ErrorState /> : !broadcasts.data?.content?.length ? <EmptyState message='Рассылок пока нет' /> : (
 					<div className='table-wrap'>
 						<table className='data-table'>
-							<thead><tr><th>Сообщение</th><th>Автор</th><th>{sortButton('Получатели', 'totalRecipients')}</th><th><div className='flex gap-3'><span>Результат</span>{sortButton('доставлено', 'sent')}{sortButton('ошибки', 'failed')}{sortButton('пропущено', 'skipped')}</div></th><th>{sortButton('Дата создания', 'createdAt')}</th><th /></tr></thead>
+							<thead><tr><th>Сообщение</th><th>Автор</th><th>{sortButton('Получатели', 'totalRecipients')}</th><th>Доставлено</th><th>Ошибки</th><th>Пропущено</th><th>{sortButton('Дата создания', 'createdAt')}</th><th /></tr></thead>
 							<tbody>{broadcasts.data.content.map(broadcast => (
 								<tr key={broadcast.id}>
 									<td className='max-w-md'><p className='line-clamp-2 whitespace-normal break-words'>{broadcast.message}</p></td>
 									<td><b>@{broadcast.createdByUsername || 'без username'}</b><div className='text-xs text-slate-400'>ID {broadcast.createdByUserId}</div></td>
 									<td>{broadcast.totalRecipients}</td>
-									<td><div className='flex flex-wrap gap-1 text-xs'><span className='badge bg-emerald-50 text-emerald-700'>Доставлено {broadcast.sent}</span><span className='badge bg-red-50 text-red-700'>Ошибки {broadcast.failed}</span><span className='badge bg-slate-100 text-slate-600'>Пропущено {broadcast.skipped}</span></div></td>
+									<td><span className='badge bg-emerald-50 text-emerald-700'>{broadcast.sent}</span></td>
+									<td><span className='badge bg-red-50 text-red-700'>{broadcast.failed}</span></td>
+									<td><span className='badge bg-slate-100 text-slate-600'>{broadcast.skipped}</span></td>
 									<td className='whitespace-nowrap'>{formatDateTime(broadcast.createdAt)}</td>
 									<td><Link className='btn btn-soft !p-2' href={APP_ROUTES.ADMIN.broadcast(broadcast.id)} aria-label='Открыть рассылку' title='Открыть рассылку'><Eye size={17} /></Link></td>
 								</tr>
