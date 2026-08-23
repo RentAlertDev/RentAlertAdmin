@@ -79,6 +79,15 @@ export type AuditLog = {
 	eventStatus?: string
 	createdAt: string
 }
+export type AuditLogPage = {
+	content: AuditLog[]
+	page: {
+		size: number
+		number: number
+		totalElements: number
+		totalPages: number
+	}
+}
 export type Feedback = {
 	id: number
 	userId: number
