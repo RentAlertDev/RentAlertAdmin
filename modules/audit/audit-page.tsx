@@ -27,6 +27,7 @@ const initiatorStyles: Record<string, string> = {
 
 export function AuditPage() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
 	const [sort, setSort] = useState('createdAt,desc')
 	const [initiator, setInitiator] = useState<Initiator>('ALL')
 	const [open, setOpen] = useState<Set<number>>(new Set())
@@ -34,13 +35,13 @@ export function AuditPage() {
 	const [retentionDays, setRetentionDays] = useState(4)
 	const queryClient = useQueryClient()
 	const audit = useQuery({
-		queryKey: ['audit', page, sort, initiator],
+		queryKey: ['audit', page, pageSize, sort, initiator],
 		queryFn: () =>
 			api
 				.get<Page<AuditLog>>('/audit-logs', {
 					params: {
 						page,
-						size: 20,
+						size: pageSize,
 						sort,
 						...(initiator !== 'ALL'
 							? { eventInitiator: initiator }
@@ -59,12 +60,18 @@ export function AuditPage() {
 		},
 		onError: () => toast.error('Не удалось очистить журнал')
 	})
-	const toggleSort = (field: string) =>
+	const toggleSort = (field: string) => {
+		setPage(0)
 		setSort(current =>
 			current === `${field},desc` ? `${field},asc` : `${field},desc`
 		)
+	}
 	const changeInitiator = (value: Initiator) => {
 		setInitiator(value)
+		setPage(0)
+	}
+	const changePageSize = (value: number) => {
+		setPageSize(value)
 		setPage(0)
 	}
 	const toggleOpen = (id: number) =>
@@ -193,6 +200,8 @@ export function AuditPage() {
 					page={page}
 					totalPages={audit.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 
