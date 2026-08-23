@@ -10,7 +10,11 @@ import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { useDebouncedValue } from '@/shared/hooks/use-debounced-value'
 import { formatDateTime, initials } from '@/shared/lib/format'
-import type { Page, UserProfile } from '@/shared/model/types'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { UserProfile } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
@@ -22,10 +26,10 @@ export function UsersList() {
 		queryKey: ['profiles', page],
 		queryFn: () =>
 			api
-				.get<
-					Page<UserProfile>
-				>('/profiles', { params: { page, size: 20 } })
-				.then(r => r.data)
+				.get<SpringPageResponse<UserProfile>>('/profiles', {
+					params: { page, size: 20 }
+				})
+				.then(r => normalizePage(r.data))
 	})
 	const users = useMemo(
 		() =>
@@ -59,7 +63,7 @@ export function UsersList() {
 						/>
 					</div>
 					<span className='text-sm text-slate-500'>
-						Всего: {query.data?.totalElements || 0}
+						Всего: {query.data?.totalElements ?? 0}
 					</span>
 				</div>
 				{query.isLoading ? (

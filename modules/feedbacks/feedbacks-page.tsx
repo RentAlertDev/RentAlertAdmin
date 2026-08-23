@@ -6,7 +6,11 @@ import { useState } from 'react'
 
 import { api } from '@/shared/api/http-client'
 import { formatDateTime } from '@/shared/lib/format'
-import type { Feedback, Page } from '@/shared/model/types'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { Feedback } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
@@ -18,10 +22,10 @@ export function FeedbacksPage() {
 		queryKey: ['feedbacks', page, sort],
 		queryFn: () =>
 			api
-				.get<
-					Page<Feedback>
-				>('/feedbacks', { params: { page, size: 20, sort } })
-				.then(r => r.data)
+				.get<SpringPageResponse<Feedback>>('/feedbacks', {
+					params: { page, size: 20, sort }
+				})
+				.then(r => normalizePage(r.data))
 	})
 	const toggleSort = (field: string) =>
 		setSort(s => (s === `${field},desc` ? `${field},asc` : `${field},desc`))

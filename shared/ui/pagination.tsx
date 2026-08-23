@@ -32,10 +32,12 @@ export function Pagination({
 					{pages.map(pageNumber => (
 						<button
 							key={pageNumber}
-								className={`btn !min-w-9 !px-2 ${pageNumber === page ? 'btn-primary' : 'btn-soft'}`}
+							className={`btn !min-w-9 !px-2 ${pageNumber === page ? 'btn-primary' : 'btn-soft'}`}
 							onClick={() => onChange(pageNumber)}
-								aria-label={`Страница ${pageNumber + 1}`}
-								aria-current={pageNumber === page ? 'page' : undefined}
+							aria-label={`Страница ${pageNumber + 1}`}
+							aria-current={
+								pageNumber === page ? 'page' : undefined
+							}
 						>
 							{pageNumber + 1}
 						</button>
@@ -56,7 +58,9 @@ export function Pagination({
 					<select
 						className='field !w-auto !py-2'
 						value={pageSize}
-						onChange={event => onPageSizeChange(Number(event.target.value))}
+						onChange={event =>
+							onPageSizeChange(Number(event.target.value))
+						}
 					>
 						{pageSizeOptions.map(option => (
 							<option key={option} value={option}>

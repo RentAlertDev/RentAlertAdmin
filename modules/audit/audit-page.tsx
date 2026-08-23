@@ -88,7 +88,8 @@ export function AuditPage() {
 				<div>
 					<h1 className='text-3xl font-bold'>Аудит</h1>
 					<p className='mt-1 text-slate-500'>
-						История действий пользователей, администраторов и системы
+						История действий пользователей, администраторов и
+						системы
 					</p>
 				</div>
 				<button
@@ -103,7 +104,9 @@ export function AuditPage() {
 			<section className='card'>
 				<div className='flex flex-wrap items-end gap-4 border-b border-slate-100 p-5'>
 					<label className='min-w-48 text-sm font-semibold'>
-						<span className='mb-2 block text-slate-500'>Инициатор</span>
+						<span className='mb-2 block text-slate-500'>
+							Инициатор
+						</span>
 						<select
 							className='field'
 							value={initiator}
@@ -147,7 +150,9 @@ export function AuditPage() {
 									<th>
 										<button
 											className='flex items-center gap-1'
-											onClick={() => toggleSort('createdAt')}
+											onClick={() =>
+												toggleSort('createdAt')
+											}
 										>
 											Дата <ArrowDownUp size={14} />
 										</button>
@@ -157,38 +162,61 @@ export function AuditPage() {
 							<tbody>
 								{audit.data.content.map(event => {
 									const expanded = open.has(event.id)
-									const description = event.eventDescription || '—'
+									const description =
+										event.eventDescription || '—'
 									return (
 										<tr key={event.id}>
 											<td className='overflow-hidden'>
 												<b className='block break-words'>
-													{event.eventName || 'Без названия'}
+													{event.eventName ||
+														'Без названия'}
 												</b>
 												<div className='text-xs text-slate-400'>
 													ID {event.id}
 												</div>
 											</td>
 											<td className='min-w-0 overflow-hidden'>
-												<p className={`break-words whitespace-normal ${expanded ? '' : 'line-clamp-2'}`}>
+												<p
+													className={`break-words whitespace-normal ${expanded ? '' : 'line-clamp-2'}`}
+												>
 													{description}
 												</p>
 												{description.length > 120 && (
 													<button
-													className='mt-1 flex items-center gap-1 text-xs font-bold text-indigo-600'
-														onClick={() => toggleOpen(event.id)}
+														className='mt-1 flex items-center gap-1 text-xs font-bold text-indigo-600'
+														onClick={() =>
+															toggleOpen(event.id)
+														}
 													>
-														{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-														{expanded ? 'Свернуть' : 'Показать целиком'}
+														{expanded ? (
+															<ChevronUp
+																size={14}
+															/>
+														) : (
+															<ChevronDown
+																size={14}
+															/>
+														)}
+														{expanded
+															? 'Свернуть'
+															: 'Показать целиком'}
 													</button>
 												)}
 											</td>
 											<td>
-												<span className={`badge ${initiatorStyles[event.eventInitiator] || 'bg-slate-100 text-slate-600'}`}>
-													{event.eventInitiator || '—'}
+												<span
+													className={`badge ${initiatorStyles[event.eventInitiator] || 'bg-slate-100 text-slate-600'}`}
+												>
+													{event.eventInitiator ||
+														'—'}
 												</span>
 											</td>
 											<td>{event.eventStatus || '—'}</td>
-											<td className='whitespace-nowrap'>{formatDateTime(event.createdAt)}</td>
+											<td className='whitespace-nowrap'>
+												{formatDateTime(
+													event.createdAt
+												)}
+											</td>
 										</tr>
 									)
 								})}
@@ -207,12 +235,21 @@ export function AuditPage() {
 
 			{showCleanup && (
 				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
-					<div className='card w-full max-w-md p-6' role='dialog' aria-modal='true' aria-labelledby='audit-cleanup-title'>
-						<h2 id='audit-cleanup-title' className='text-xl font-bold'>
+					<div
+						className='card w-full max-w-md p-6'
+						role='dialog'
+						aria-modal='true'
+						aria-labelledby='audit-cleanup-title'
+					>
+						<h2
+							id='audit-cleanup-title'
+							className='text-xl font-bold'
+						>
 							Очистить журнал аудита?
 						</h2>
 						<p className='my-3 text-slate-500'>
-							Будут удалены записи старше указанного срока. Операцию нельзя отменить.
+							Будут удалены записи старше указанного срока.
+							Операцию нельзя отменить.
 						</p>
 						<label className='block text-sm font-semibold'>
 							Хранить записи не старше, дней
@@ -221,16 +258,23 @@ export function AuditPage() {
 								type='number'
 								min={1}
 								value={retentionDays}
-								onChange={event => setRetentionDays(Number(event.target.value))}
+								onChange={event =>
+									setRetentionDays(Number(event.target.value))
+								}
 							/>
 						</label>
 						<div className='mt-5 flex justify-end gap-2'>
-							<button className='btn btn-soft' onClick={() => setShowCleanup(false)}>
+							<button
+								className='btn btn-soft'
+								onClick={() => setShowCleanup(false)}
+							>
 								Отмена
 							</button>
 							<button
 								className='btn bg-red-600 text-white'
-								disabled={cleanup.isPending || retentionDays < 1}
+								disabled={
+									cleanup.isPending || retentionDays < 1
+								}
 								onClick={() => cleanup.mutate()}
 							>
 								Очистить

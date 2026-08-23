@@ -7,7 +7,11 @@ import { toast } from 'sonner'
 
 import { api } from '@/shared/api/http-client'
 import { formatDateTime, formatDuration } from '@/shared/lib/format'
-import type { JobSetting, Page } from '@/shared/model/types'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { JobSetting } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
@@ -24,10 +28,10 @@ export function JobsPage() {
 		queryKey: ['jobs', page],
 		queryFn: () =>
 			api
-				.get<
-					Page<JobSetting>
-				>('/job-settings', { params: { page, size: 20, sort: 'startedAt,desc' } })
-				.then(r => r.data)
+				.get<SpringPageResponse<JobSetting>>('/job-settings', {
+					params: { page, size: 20, sort: 'startedAt,desc' }
+				})
+				.then(r => normalizePage(r.data))
 	})
 	const run = useMutation({
 		mutationFn: (url: string) => api.post(url),
@@ -189,12 +193,21 @@ export function JobsPage() {
 			</section>
 			{confirm && (
 				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
-					<div className='card max-w-md p-6' role='dialog' aria-modal='true' aria-labelledby='job-confirm-title'>
-						<h2 id='job-confirm-title' className='text-xl font-bold'>
+					<div
+						className='card max-w-md p-6'
+						role='dialog'
+						aria-modal='true'
+						aria-labelledby='job-confirm-title'
+					>
+						<h2
+							id='job-confirm-title'
+							className='text-xl font-bold'
+						>
 							{confirm.title}
 						</h2>
 						<p className='my-3 text-slate-500'>
-							{confirm.description} Операцию нельзя отменить из панели.
+							{confirm.description} Операцию нельзя отменить из
+							панели.
 						</p>
 						<div className='flex justify-end gap-2'>
 							<button
