@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 
 import { api } from '@/shared/api/http-client'
 import { formatDateTime } from '@/shared/lib/format'
-import type { AuditLog, Page } from '@/shared/model/types'
+import type { AuditLogPage } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
@@ -38,7 +38,7 @@ export function AuditPage() {
 		queryKey: ['audit', page, pageSize, sort, initiator],
 		queryFn: () =>
 			api
-				.get<Page<AuditLog>>('/audit-logs', {
+				.get<AuditLogPage>('/audit-logs', {
 					params: {
 						page,
 						size: pageSize,
@@ -119,7 +119,7 @@ export function AuditPage() {
 					</label>
 					<div className='flex items-center gap-2 text-sm text-slate-500'>
 						<ClipboardList size={18} />
-						{audit.data?.totalElements ?? 0} записей
+						{audit.data?.page.totalElements ?? 0} записей
 					</div>
 				</div>
 				{audit.isLoading ? (
@@ -198,7 +198,7 @@ export function AuditPage() {
 				)}
 				<Pagination
 					page={page}
-					totalPages={audit.data?.totalPages || 0}
+					totalPages={audit.data?.page.totalPages || 0}
 					onChange={setPage}
 					pageSize={pageSize}
 					onPageSizeChange={changePageSize}
