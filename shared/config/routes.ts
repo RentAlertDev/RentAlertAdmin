@@ -7,6 +7,8 @@ export const APP_ROUTES = {
 		USERS: '/admin/users',
 		JOBS: '/admin/jobs',
 		FEEDBACKS: '/admin/feedbacks',
+		BROADCASTS: '/admin/broadcasts',
+		broadcast: (broadcastId: number | string) => `/admin/broadcasts/${broadcastId}`,
 		user: (userId: number | string) => `/admin/users/${userId}`
 	}
 } as const

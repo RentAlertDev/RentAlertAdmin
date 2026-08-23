@@ -79,3 +79,23 @@ export type Feedback = {
 	createdAt: string
 	updatedAt?: string
 }
+export type Broadcast = {
+	id: number
+	message: string
+	createdByUserId: number
+	createdByUsername: string
+	totalRecipients: number
+	sent: number
+	failed: number
+	skipped: number
+	createdAt: string
+}
+export type BroadcastRecipient = {
+	id: number
+	userId: number
+	username: string
+	photoUrl?: string
+	status: 'SENT' | 'FAILED' | 'SKIPPED'
+	errorMessage?: string
+	createdAt: string
+}
