@@ -1,17 +1,21 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	ArrowLeft,
+	Ban,
 	Clock,
 	Heart,
 	LogIn,
 	MessageSquare,
-	SlidersHorizontal
+	SlidersHorizontal,
+	Trash2
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import {
 	Bar,
 	BarChart,
@@ -50,6 +54,13 @@ const colors = [
 export function UserDetail({ userId }: { userId: number }) {
 	const [since, setSince] = useState(daysAgo())
 	const [until, setUntil] = useState(dateInput(new Date()))
+	const [confirm, setConfirm] = useState<{
+		title: string
+		description: string
+		action: 'block' | 'delete'
+	} | null>(null)
+	const queryClient = useQueryClient()
+	const router = useRouter()
 	const profile = useQuery({
 		queryKey: ['profile', userId],
 		queryFn: () =>
@@ -72,6 +83,24 @@ export function UserDetail({ userId }: { userId: number }) {
 					UserActivityLog[] | UserActivityLog
 				>(`/user-statistics/actions/${userId}/log`, { params: { since, until } })
 				.then(r => (Array.isArray(r.data) ? r.data : [r.data]))
+	})
+	const updateRole = useMutation({
+		mutationFn: (role: 'USER' | 'BLOCKED') =>
+			api.patch(`/profiles/${userId}/role`, { role }),
+		onSuccess: () => {
+			toast.success('Статус пользователя изменён')
+			setConfirm(null)
+			queryClient.invalidateQueries({ queryKey: ['profile', userId] })
+		},
+		onError: () => toast.error('Не удалось изменить статус пользователя')
+	})
+	const removeUser = useMutation({
+		mutationFn: () => api.delete(`/profiles/${userId}`),
+		onSuccess: () => {
+			toast.success('Пользователь удалён')
+			router.replace(APP_ROUTES.ADMIN.USERS)
+		},
+		onError: () => toast.error('Не удалось удалить пользователя')
 	})
 	if (profile.isLoading || summary.isLoading || log.isLoading)
 		return <LoadingState />
@@ -135,6 +164,42 @@ export function UserDetail({ userId }: { userId: number }) {
 							: 'Не настроены'}
 					</div>
 				</div>
+			<div className='flex flex-wrap justify-end gap-2'>
+				<button
+					className='btn btn-soft'
+					disabled={updateRole.isPending || removeUser.isPending}
+					onClick={() =>
+						setConfirm({
+							title:
+								p.roleName === 'BLOCKED'
+									? 'Разблокировать пользователя?'
+									: 'Заблокировать пользователя?',
+							description:
+								p.roleName === 'BLOCKED'
+									? 'Пользователь снова получит доступ к системе.'
+									: 'Активная сессия пользователя будет немедленно завершена.',
+							action: 'block'
+						})
+					}
+				>
+					<Ban size={17} />
+					{p.roleName === 'BLOCKED' ? 'Разблокировать' : 'Заблокировать'}
+				</button>
+				<button
+					className='btn bg-red-600 text-white hover:bg-red-700'
+					disabled={updateRole.isPending || removeUser.isPending}
+					onClick={() =>
+						setConfirm({
+							title: 'Удалить пользователя?',
+							description:
+								'Профиль и связанные данные будут удалены без возможности восстановления.',
+							action: 'delete'
+						})
+					}
+				>
+					<Trash2 size={17} /> Удалить
+				</button>
+			</div>
 			</div>
 			<div className='grid gap-4 md:grid-cols-3 xl:grid-cols-6'>
 				<Metric icon={<LogIn />} label='Входы' value={s?.loginCount} />
@@ -218,6 +283,43 @@ export function UserDetail({ userId }: { userId: number }) {
 					</ResponsiveContainer>
 				</div>
 			</section>
+			{confirm && (
+				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
+					<div
+						className='card w-full max-w-md p-6'
+						role='dialog'
+						aria-modal='true'
+						aria-labelledby='user-action-confirm-title'
+					>
+						<h2 id='user-action-confirm-title' className='text-xl font-bold'>
+							{confirm.title}
+						</h2>
+						<p className='my-3 text-slate-500'>{confirm.description}</p>
+						<div className='flex justify-end gap-2'>
+							<button className='btn btn-soft' onClick={() => setConfirm(null)}>
+								Отмена
+							</button>
+							<button
+								className={`btn ${confirm.action === 'delete' ? 'bg-red-600 text-white hover:bg-red-700' : 'btn-primary'}`}
+								disabled={updateRole.isPending || removeUser.isPending}
+								onClick={() => {
+									if (confirm.action === 'delete') {
+										removeUser.mutate()
+										return
+									}
+									updateRole.mutate(
+										p.roleName === 'BLOCKED' ? 'USER' : 'BLOCKED'
+									)
+								}}
+							>
+								{removeUser.isPending || updateRole.isPending
+									? 'Выполнение...'
+									: 'Подтвердить'}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
