@@ -71,6 +71,14 @@ export type JobSetting = {
 	finishedAt?: string
 	executionTimeMs?: number
 }
+export type AuditLog = {
+	id: number
+	eventName: string
+	eventDescription?: string
+	eventInitiator: 'INTERNAL' | 'USER' | 'ADMIN' | string
+	eventStatus?: string
+	createdAt: string
+}
 export type Feedback = {
 	id: number
 	userId: number
