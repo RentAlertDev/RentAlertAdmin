@@ -1,0 +1,221 @@
+@import 'tailwindcss';
+:root {
+	--ink: #172033;
+	--muted: #697386;
+	--line: #e6e9ef;
+	--panel: #fff;
+	--canvas: #f5f7fb;
+	--brand: #5b5ce2;
+	--brand-dark: #4546c8;
+	--success: #16a36a;
+	--danger: #dc4353;
+}
+.dark {
+	--ink: #e8ecf5;
+	--muted: #98a3b8;
+	--line: #2a3447;
+	--panel: #172033;
+	--canvas: #0e1420;
+	--brand: #818cf8;
+	--brand-dark: #6366f1;
+}
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	min-height: 100%;
+}
+body {
+	margin: 0;
+	background: var(--canvas);
+	color: var(--ink);
+	font-family: Arial, Helvetica, sans-serif;
+}
+button,
+input {
+	font: inherit;
+}
+button {
+	cursor: pointer;
+}
+.card {
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 16px;
+	box-shadow: 0 3px 14px rgba(20, 31, 56, 0.045);
+}
+.field {
+	width: 100%;
+	border: 1px solid #d9dee8;
+	border-radius: 10px;
+	background: #fff;
+	padding: 10px 12px;
+	outline: none;
+	transition: 0.15s;
+}
+.field:focus {
+	border-color: var(--brand);
+	box-shadow: 0 0 0 3px rgba(91, 92, 226, 0.12);
+}
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	border: 0;
+	border-radius: 10px;
+	padding: 10px 15px;
+	font-weight: 700;
+	transition: 0.15s;
+}
+.btn-primary {
+	color: #fff;
+	background: var(--brand);
+}
+.btn-primary:hover {
+	background: var(--brand-dark);
+}
+.btn-soft {
+	color: #3f4168;
+	background: #f0f1f8;
+}
+.btn-soft:hover {
+	background: #e7e8f2;
+}
+.table-wrap {
+	overflow: auto;
+}
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+	min-width: 760px;
+}
+.data-table th {
+	color: var(--muted);
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	text-align: left;
+	padding: 13px 16px;
+	border-bottom: 1px solid var(--line);
+	white-space: nowrap;
+}
+.data-table td {
+	padding: 15px 16px;
+	border-bottom: 1px solid #eff1f5;
+	vertical-align: middle;
+}
+.data-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+.data-table tbody tr:hover {
+	background: #fafbfe;
+}
+.badge {
+	display: inline-flex;
+	align-items: center;
+	border-radius: 999px;
+	padding: 4px 9px;
+	font-size: 12px;
+	font-weight: 700;
+}
+.dark .bg-white,
+.dark aside,
+.dark header {
+	background-color: #172033 !important;
+}
+.dark .field {
+	background: #111827;
+	border-color: #334155;
+	color: #e8ecf5;
+	color-scheme: dark;
+}
+.dark .bg-slate-50,
+.dark .hover\:bg-slate-50:hover {
+	background-color: #1d2738 !important;
+}
+.dark .bg-slate-100 {
+	background-color: #263247 !important;
+}
+.dark .bg-indigo-50 {
+	background-color: #292b5b !important;
+}
+.dark .bg-indigo-100 {
+	background-color: #313568 !important;
+}
+.dark .bg-red-50 {
+	background-color: #401f2a !important;
+}
+.dark .bg-blue-50 {
+	background-color: #172e50 !important;
+}
+.dark .bg-emerald-50 {
+	background-color: #123c32 !important;
+}
+.dark .bg-amber-50 {
+	background-color: #44351b !important;
+}
+.dark .text-slate-400 {
+	color: #8490a5 !important;
+}
+.dark .text-slate-500 {
+	color: #9aa6bb !important;
+}
+.dark .text-slate-600 {
+	color: #b8c1d1 !important;
+}
+.dark .text-indigo-600,
+.dark .text-indigo-700 {
+	color: #a5b4fc !important;
+}
+.dark .text-red-600 {
+	color: #fda4af !important;
+}
+.dark .border-slate-100,
+.dark .border-slate-200 {
+	border-color: #2a3447 !important;
+}
+.dark .data-table th,
+.dark .data-table td {
+	border-color: #2a3447;
+}
+.dark .data-table tbody tr:hover {
+	background: #1b2535;
+}
+.dark .btn-soft {
+	color: #d8deea;
+	background: #263247;
+}
+.dark .btn-soft:hover {
+	background: #303e55;
+}
+.dark .login-screen {
+	background:
+		radial-gradient(circle at top left, #25264d, transparent 45%), #0e1420 !important;
+}
+.dark .recharts-cartesian-grid line {
+	stroke: #334155;
+}
+.dark .recharts-text {
+	fill: #aab4c7;
+}
+.theme-toggle {
+	transition:
+		background-color 0.15s,
+		color 0.15s;
+}
+@media (max-width: 900px) {
+	.desktop-sidebar {
+		display: none !important;
+	}
+	.admin-main {
+		margin-left: 0 !important;
+	}
+	.mobile-nav {
+		display: flex !important;
+	}
+	.page-pad {
+		padding: 18px !important;
+	}
+}
