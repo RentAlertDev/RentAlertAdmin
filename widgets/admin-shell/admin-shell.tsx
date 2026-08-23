@@ -2,6 +2,7 @@
 
 import {
 	BarChart3,
+	ClipboardList,
 	LogOut,
 	Megaphone,
 	MessageSquare,
@@ -21,7 +22,8 @@ const links = [
 	{ href: APP_ROUTES.ADMIN.USERS, label: 'Пользователи', icon: Users },
 	{ href: APP_ROUTES.ADMIN.JOBS, label: 'Фоновые задачи', icon: Wrench },
 	{ href: APP_ROUTES.ADMIN.FEEDBACKS, label: 'Отзывы', icon: MessageSquare },
-	{ href: APP_ROUTES.ADMIN.BROADCASTS, label: 'Рассылки', icon: Megaphone }
+	{ href: APP_ROUTES.ADMIN.BROADCASTS, label: 'Рассылки', icon: Megaphone },
+	{ href: APP_ROUTES.ADMIN.AUDIT, label: 'Аудит', icon: ClipboardList }
 ]
 export function AdminShell({ children }: { children: React.ReactNode }) {
 	const path = usePathname()

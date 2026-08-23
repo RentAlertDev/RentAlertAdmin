@@ -8,6 +8,7 @@ export const APP_ROUTES = {
 		JOBS: '/admin/jobs',
 		FEEDBACKS: '/admin/feedbacks',
 		BROADCASTS: '/admin/broadcasts',
+		AUDIT: '/admin/audit',
 		broadcast: (broadcastId: number | string) => `/admin/broadcasts/${broadcastId}`,
 		user: (userId: number | string) => `/admin/users/${userId}`
 	}
