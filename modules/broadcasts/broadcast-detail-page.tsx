@@ -41,6 +41,7 @@ const statusInfo = {
 
 export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(50)
 	const [sort, setSort] = useState('createdAt,asc')
 	const [confirmDelete, setConfirmDelete] = useState(false)
 	const queryClient = useQueryClient()
@@ -53,15 +54,19 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 				.then(response => response.data)
 	})
 	const recipients = useQuery({
-		queryKey: ['broadcast-recipients', broadcastId, page, sort],
+		queryKey: ['broadcast-recipients', broadcastId, page, pageSize, sort],
 		queryFn: () =>
 			api
 				.get<
 					Page<BroadcastRecipient>
-				>(`/notifications/broadcasts/${broadcastId}/recipients`, { params: { page, size: 50, sort } })
+				>(`/notifications/broadcasts/${broadcastId}/recipients`, { params: { page, size: pageSize, sort } })
 				.then(response => response.data),
 		enabled: !detail.isLoading && !detail.isError
 	})
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
 	const removeBroadcast = useMutation({
 		mutationFn: () =>
 			api.delete(`/notifications/broadcasts/${broadcastId}`),
@@ -244,6 +249,8 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 					page={page}
 					totalPages={recipients.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 			{confirmDelete && (

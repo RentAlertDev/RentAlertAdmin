@@ -16,19 +16,24 @@ import { Pagination } from '@/shared/ui/pagination'
 
 export function FeedbacksPage() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
 	const [sort, setSort] = useState('createdAt,desc')
 	const [open, setOpen] = useState<Set<number>>(new Set())
 	const query = useQuery({
-		queryKey: ['feedbacks', page, sort],
+		queryKey: ['feedbacks', page, pageSize, sort],
 		queryFn: () =>
 			api
 				.get<SpringPageResponse<Feedback>>('/feedbacks', {
-					params: { page, size: 20, sort }
+					params: { page, size: pageSize, sort }
 				})
 				.then(r => normalizePage(r.data))
 	})
 	const toggleSort = (field: string) =>
 		setSort(s => (s === `${field},desc` ? `${field},asc` : `${field},desc`))
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
 	return (
 		<div className='space-y-6'>
 			<div>
@@ -55,7 +60,16 @@ export function FeedbacksPage() {
 							</colgroup>
 							<thead>
 								<tr>
-									<th>Автор</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('username')
+											}
+										>
+											Автор <ArrowDownUp size={14} />
+										</button>
+									</th>
 									<th>
 										<button
 											className='flex items-center gap-1'
@@ -181,6 +195,8 @@ export function FeedbacksPage() {
 					page={page}
 					totalPages={query.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 		</div>

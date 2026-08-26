@@ -1,10 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Search } from 'lucide-react'
+import { ArrowDownUp, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
@@ -20,26 +20,40 @@ import { Pagination } from '@/shared/ui/pagination'
 
 export function UsersList() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [sort, setSort] = useState('id,desc')
 	const [search, setSearch] = useState('')
 	const debouncedSearch = useDebouncedValue(search)
+	const filter = debouncedSearch.trim()
 	const query = useQuery({
-		queryKey: ['profiles', page],
+		queryKey: ['profiles', page, pageSize, sort, filter],
 		queryFn: () =>
 			api
 				.get<SpringPageResponse<UserProfile>>('/profiles', {
-					params: { page, size: 20 }
+					params: {
+						page,
+						size: pageSize,
+						sort,
+						...(filter ? { filter } : {})
+					}
 				})
 				.then(r => normalizePage(r.data))
 	})
-	const users = useMemo(
-		() =>
-			query.data?.content?.filter(u =>
-				(u.username || '')
-					.toLowerCase()
-					.includes(debouncedSearch.trim().toLowerCase())
-			) || [],
-		[query.data, debouncedSearch]
-	)
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
+	const changeSearch = (value: string) => {
+		setSearch(value)
+		setPage(0)
+	}
+	const toggleSort = (field: string) => {
+		setPage(0)
+		setSort(current =>
+			current === `${field},desc` ? `${field},asc` : `${field},desc`
+		)
+	}
+	const users = query.data?.content || []
 	return (
 		<div className='space-y-6'>
 			<div>
@@ -59,7 +73,7 @@ export function UsersList() {
 							className='field !pl-10'
 							placeholder='Поиск по username…'
 							value={search}
-							onChange={e => setSearch(e.target.value)}
+							onChange={e => changeSearch(e.target.value)}
 						/>
 					</div>
 					<span className='text-sm text-slate-500'>
@@ -77,9 +91,29 @@ export function UsersList() {
 						<table className='data-table'>
 							<thead>
 								<tr>
-									<th>Пользователь</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('username')
+											}
+										>
+											Пользователь{' '}
+											<ArrowDownUp size={14} />
+										</button>
+									</th>
 									<th>Статус бота</th>
-									<th>Последний вход</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('lastLogin')
+											}
+										>
+											Последний вход{' '}
+											<ArrowDownUp size={14} />
+										</button>
+									</th>
 									<th>Тихие часы</th>
 									<th>Действия</th>
 								</tr>
@@ -144,6 +178,8 @@ export function UsersList() {
 					page={page}
 					totalPages={query.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</div>
 		</div>

@@ -1,7 +1,13 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Database, RefreshCcw, Trash2, WalletCards } from 'lucide-react'
+import {
+	ArrowDownUp,
+	Database,
+	RefreshCcw,
+	Trash2,
+	WalletCards
+} from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -17,6 +23,8 @@ import { Pagination } from '@/shared/ui/pagination'
 
 export function JobsPage() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [sort, setSort] = useState('startedAt,desc')
 	const [all, setAll] = useState(true)
 	const [confirm, setConfirm] = useState<{
 		url: string
@@ -25,14 +33,32 @@ export function JobsPage() {
 	} | null>(null)
 	const qc = useQueryClient()
 	const jobs = useQuery({
-		queryKey: ['jobs', page],
+		queryKey: ['jobs', page, pageSize, sort],
 		queryFn: () =>
 			api
 				.get<SpringPageResponse<JobSetting>>('/job-settings', {
-					params: { page, size: 20, sort: 'startedAt,desc' }
+					params: { page, size: pageSize, sort }
 				})
 				.then(r => normalizePage(r.data))
 	})
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
+	const toggleSort = (field: string) => {
+		setPage(0)
+		setSort(current =>
+			current === `${field},desc` ? `${field},asc` : `${field},desc`
+		)
+	}
+	const sortButton = (label: string, field: string) => (
+		<button
+			className='flex items-center gap-1'
+			onClick={() => toggleSort(field)}
+		>
+			{label} <ArrowDownUp size={14} />
+		</button>
+	)
 	const run = useMutation({
 		mutationFn: (url: string) => api.post(url),
 		onSuccess: () => {
@@ -139,12 +165,31 @@ export function JobsPage() {
 						<table className='data-table'>
 							<thead>
 								<tr>
-									<th>Задача</th>
-									<th>Инициатор</th>
-									<th>Область</th>
-									<th>Записи</th>
-									<th>Время</th>
-									<th>Длительность</th>
+									<th>{sortButton('Задача', 'jobName')}</th>
+									<th>
+										{sortButton('Инициатор', 'initiator')}
+									</th>
+									<th>
+										{sortButton(
+											'Область',
+											'executionScope'
+										)}
+									</th>
+									<th>
+										{sortButton(
+											'Записи',
+											'affectedRecords'
+										)}
+									</th>
+									<th>
+										{sortButton('Время', 'startedAt')}
+									</th>
+									<th>
+										{sortButton(
+											'Длительность',
+											'executionTimeMs'
+										)}
+									</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -189,6 +234,8 @@ export function JobsPage() {
 					page={page}
 					totalPages={jobs.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 			{confirm && (

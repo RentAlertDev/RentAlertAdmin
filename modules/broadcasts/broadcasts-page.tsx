@@ -15,19 +15,24 @@ import { Pagination } from '@/shared/ui/pagination'
 
 export function BroadcastsPage() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
 	const [sort, setSort] = useState('createdAt,desc')
 	const [modalOpen, setModalOpen] = useState(false)
 	const [message, setMessage] = useState('')
 	const queryClient = useQueryClient()
 	const broadcasts = useQuery({
-		queryKey: ['broadcasts', page, sort],
+		queryKey: ['broadcasts', page, pageSize, sort],
 		queryFn: () =>
 			api
 				.get<Page<Broadcast>>('/notifications/broadcasts', {
-					params: { page, size: 20, sort }
+					params: { page, size: pageSize, sort }
 				})
 				.then(response => response.data)
 	})
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
 	const toggleSort = (field: string) => {
 		setPage(0)
 		setSort(current =>
@@ -82,16 +87,23 @@ export function BroadcastsPage() {
 							<thead>
 								<tr>
 									<th>Сообщение</th>
-									<th>Автор</th>
+									<th>
+										{sortButton(
+											'Автор',
+											'createdByUsername'
+										)}
+									</th>
 									<th>
 										{sortButton(
 											'Получатели',
 											'totalRecipients'
 										)}
 									</th>
-									<th>Доставлено</th>
-									<th>Ошибки</th>
-									<th>Пропущено</th>
+									<th>{sortButton('Доставлено', 'sent')}</th>
+									<th>{sortButton('Ошибки', 'failed')}</th>
+									<th>
+										{sortButton('Пропущено', 'skipped')}
+									</th>
 									<th>
 										{sortButton(
 											'Дата создания',
@@ -162,6 +174,8 @@ export function BroadcastsPage() {
 					page={page}
 					totalPages={broadcasts.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 			{modalOpen && (

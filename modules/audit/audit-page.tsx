@@ -143,10 +143,39 @@ export function AuditPage() {
 							</colgroup>
 							<thead>
 								<tr>
-									<th>Событие</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('eventName')
+											}
+										>
+											Событие{' '}
+											<ArrowDownUp size={14} />
+										</button>
+									</th>
 									<th>Описание</th>
-									<th>Инициатор</th>
-									<th>Статус</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('eventInitiator')
+											}
+										>
+											Инициатор{' '}
+											<ArrowDownUp size={14} />
+										</button>
+									</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('eventStatus')
+											}
+										>
+											Статус <ArrowDownUp size={14} />
+										</button>
+									</th>
 									<th>
 										<button
 											className='flex items-center gap-1'
