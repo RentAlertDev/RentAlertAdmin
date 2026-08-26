@@ -15,7 +15,7 @@ import {
 	normalizePage
 } from '@/shared/lib/normalize-page'
 import type { UserProfile } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
 export function UsersList() {
@@ -63,7 +63,7 @@ export function UsersList() {
 				</p>
 			</div>
 			<div className='card'>
-				<div className='flex items-center justify-between gap-3 border-b border-slate-100 p-4'>
+				<div className='flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4'>
 					<div className='relative w-full max-w-sm'>
 						<Search
 							className='absolute left-3 top-3 text-slate-400'
@@ -80,12 +80,8 @@ export function UsersList() {
 						Всего: {query.data?.totalElements ?? 0}
 					</span>
 				</div>
-				{query.isLoading ? (
-					<LoadingState />
-				) : query.isError ? (
+				{query.isError ? (
 					<ErrorState />
-				) : users.length === 0 ? (
-					<EmptyState message='Пользователи не найдены' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table'>
@@ -119,7 +115,16 @@ export function UsersList() {
 								</tr>
 							</thead>
 							<tbody>
-								{users.map(u => (
+								{query.isLoading ? (
+									<TableSkeleton columns={5} />
+								) : users.length === 0 ? (
+									<tr>
+										<td colSpan={5}>
+											<EmptyState message='Пользователи не найдены' />
+										</td>
+									</tr>
+								) : (
+									users.map(u => (
 									<tr key={u.userId}>
 										<td>
 											<div className='flex items-center gap-3'>
@@ -169,7 +174,8 @@ export function UsersList() {
 											</Link>
 										</td>
 									</tr>
-								))}
+									))
+								)}
 							</tbody>
 						</table>
 					</div>

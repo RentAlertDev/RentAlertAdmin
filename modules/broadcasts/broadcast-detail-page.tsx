@@ -18,7 +18,12 @@ import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { formatDateTime } from '@/shared/lib/format'
 import type { Broadcast, BroadcastRecipient, Page } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	DetailHeaderSkeleton,
+	EmptyState,
+	ErrorState,
+	TableSkeleton
+} from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
 const statusInfo = {
@@ -91,7 +96,12 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 			{label} <ArrowDownUp size={14} />
 		</button>
 	)
-	if (detail.isLoading) return <LoadingState />
+	if (detail.isLoading)
+		return (
+			<div className='space-y-6'>
+				<DetailHeaderSkeleton />
+			</div>
+		)
 	if (detail.isError || !detail.data) return <ErrorState />
 	const broadcast = detail.data
 	return (
@@ -175,12 +185,8 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 						Результат доставки для каждого пользователя
 					</p>
 				</div>
-				{recipients.isLoading ? (
-					<LoadingState />
-				) : recipients.isError ? (
+				{recipients.isError ? (
 					<ErrorState />
-				) : !recipients.data?.content?.length ? (
-					<EmptyState message='Получатели отсутствуют' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table'>
@@ -195,7 +201,16 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 								</tr>
 							</thead>
 							<tbody>
-								{recipients.data.content.map(recipient => {
+								{recipients.isLoading ? (
+									<TableSkeleton columns={4} />
+								) : !recipients.data?.content?.length ? (
+									<tr>
+										<td colSpan={4}>
+											<EmptyState message='Получатели отсутствуют' />
+										</td>
+									</tr>
+								) : (
+									recipients.data.content.map(recipient => {
 									const info = statusInfo[recipient.status]
 									const Icon = info.icon
 									return (
@@ -240,7 +255,8 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 											</td>
 										</tr>
 									)
-								})}
+									})
+								)}
 							</tbody>
 						</table>
 					</div>

@@ -18,7 +18,7 @@ import {
 	normalizePage
 } from '@/shared/lib/normalize-page'
 import type { JobSetting } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
 export function JobsPage() {
@@ -154,12 +154,8 @@ export function JobsPage() {
 				<div className='p-5'>
 					<h2 className='text-lg font-bold'>История запусков</h2>
 				</div>
-				{jobs.isLoading ? (
-					<LoadingState />
-				) : jobs.isError ? (
+				{jobs.isError ? (
 					<ErrorState />
-				) : !jobs.data?.content?.length ? (
-					<EmptyState message='Запуски пока отсутствуют' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table'>
@@ -193,7 +189,16 @@ export function JobsPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{jobs.data.content.map((j, i) => (
+								{jobs.isLoading ? (
+									<TableSkeleton columns={6} />
+								) : !jobs.data?.content?.length ? (
+									<tr>
+										<td colSpan={6}>
+											<EmptyState message='Запуски пока отсутствуют' />
+										</td>
+									</tr>
+								) : (
+									jobs.data.content.map((j, i) => (
 									<tr
 										key={`${j.jobName}-${j.startedAt}-${i}`}
 									>
@@ -225,7 +230,8 @@ export function JobsPage() {
 											{formatDuration(j.executionTimeMs)}
 										</td>
 									</tr>
-								))}
+									))
+								)}
 							</tbody>
 						</table>
 					</div>
@@ -241,7 +247,7 @@ export function JobsPage() {
 			{confirm && (
 				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
 					<div
-						className='card max-w-md p-6'
+						className='card w-full max-w-md p-6'
 						role='dialog'
 						aria-modal='true'
 						aria-labelledby='job-confirm-title'

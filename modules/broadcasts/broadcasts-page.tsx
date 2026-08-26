@@ -10,7 +10,7 @@ import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { formatDateTime } from '@/shared/lib/format'
 import type { Broadcast, Page } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
 export function BroadcastsPage() {
@@ -75,12 +75,8 @@ export function BroadcastsPage() {
 				</button>
 			</div>
 			<section className='card'>
-				{broadcasts.isLoading ? (
-					<LoadingState />
-				) : broadcasts.isError ? (
+				{broadcasts.isError ? (
 					<ErrorState />
-				) : !broadcasts.data?.content?.length ? (
-					<EmptyState message='Рассылок пока нет' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table'>
@@ -114,7 +110,16 @@ export function BroadcastsPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{broadcasts.data.content.map(broadcast => (
+								{broadcasts.isLoading ? (
+									<TableSkeleton columns={8} />
+								) : !broadcasts.data?.content?.length ? (
+									<tr>
+										<td colSpan={8}>
+											<EmptyState message='Рассылок пока нет' />
+										</td>
+									</tr>
+								) : (
+									broadcasts.data.content.map(broadcast => (
 									<tr key={broadcast.id}>
 										<td className='max-w-md'>
 											<p className='line-clamp-2 whitespace-normal break-words'>
@@ -165,7 +170,8 @@ export function BroadcastsPage() {
 											</Link>
 										</td>
 									</tr>
-								))}
+									))
+								)}
 							</tbody>
 						</table>
 					</div>

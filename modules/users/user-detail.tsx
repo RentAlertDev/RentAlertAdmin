@@ -41,7 +41,11 @@ import type {
 	UserActivityLog,
 	UserProfile
 } from '@/shared/model/types'
-import { ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	DetailHeaderSkeleton,
+	ErrorState,
+	Skeleton
+} from '@/shared/ui/page-state'
 
 const colors = [
 	'#5b5ce2',
@@ -103,7 +107,24 @@ export function UserDetail({ userId }: { userId: number }) {
 		onError: () => toast.error('Не удалось удалить пользователя')
 	})
 	if (profile.isLoading || summary.isLoading || log.isLoading)
-		return <LoadingState />
+		return (
+			<div className='space-y-6'>
+				<Skeleton className='h-4 w-48' />
+				<DetailHeaderSkeleton />
+				<div className='grid gap-4 md:grid-cols-3 xl:grid-cols-6'>
+					{Array.from({ length: 6 }, (_, index) => (
+						<div key={index} className='card p-4'>
+							<Skeleton className='h-5 w-5 rounded' />
+							<Skeleton className='mt-3 h-7 w-12' />
+							<Skeleton className='mt-2 h-3 w-20' />
+						</div>
+					))}
+				</div>
+				<div className='card p-5'>
+					<Skeleton className='h-96 w-full' />
+				</div>
+			</div>
+		)
 	if (profile.isError || summary.isError || log.isError || !profile.data)
 		return <ErrorState />
 	const p = profile.data,

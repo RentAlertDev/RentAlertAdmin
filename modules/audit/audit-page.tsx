@@ -14,7 +14,11 @@ import { toast } from 'sonner'
 import { api } from '@/shared/api/http-client'
 import { formatDateTime } from '@/shared/lib/format'
 import type { AuditLogPage } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	EmptyState,
+	ErrorState,
+	TableSkeleton
+} from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
 type Initiator = 'ALL' | 'INTERNAL' | 'USER' | 'ADMIN'
@@ -125,12 +129,8 @@ export function AuditPage() {
 						{audit.data?.page.totalElements ?? 0} записей
 					</div>
 				</div>
-				{audit.isLoading ? (
-					<LoadingState />
-				) : audit.isError ? (
+				{audit.isError ? (
 					<ErrorState />
-				) : !audit.data?.content?.length ? (
-					<EmptyState message='Записей аудита пока нет' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table table-fixed'>
@@ -189,7 +189,16 @@ export function AuditPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{audit.data.content.map(event => {
+								{audit.isLoading ? (
+									<TableSkeleton columns={5} />
+								) : !audit.data?.content?.length ? (
+									<tr>
+										<td colSpan={5}>
+											<EmptyState message='Записей аудита пока нет' />
+										</td>
+									</tr>
+								) : (
+									audit.data.content.map(event => {
 									const expanded = open.has(event.id)
 									const description =
 										event.eventDescription || '—'
@@ -248,7 +257,8 @@ export function AuditPage() {
 											</td>
 										</tr>
 									)
-								})}
+								})
+								)}
 							</tbody>
 						</table>
 					</div>

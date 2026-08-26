@@ -11,7 +11,7 @@ import {
 	normalizePage
 } from '@/shared/lib/normalize-page'
 import type { Feedback } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
 export function FeedbacksPage() {
@@ -43,12 +43,8 @@ export function FeedbacksPage() {
 				</p>
 			</div>
 			<section className='card'>
-				{query.isLoading ? (
-					<LoadingState />
-				) : query.isError ? (
+				{query.isError ? (
 					<ErrorState />
-				) : !query.data?.content?.length ? (
-					<EmptyState message='Отзывов пока нет' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table table-fixed'>
@@ -93,7 +89,16 @@ export function FeedbacksPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{query.data.content.map(f => {
+								{query.isLoading ? (
+									<TableSkeleton columns={4} />
+								) : !query.data?.content?.length ? (
+									<tr>
+										<td colSpan={4}>
+											<EmptyState message='Отзывов пока нет' />
+										</td>
+									</tr>
+								) : (
+									query.data.content.map(f => {
 									const expanded = open.has(f.id)
 									return (
 										<tr key={f.id}>
@@ -186,7 +191,8 @@ export function FeedbacksPage() {
 											</td>
 										</tr>
 									)
-								})}
+								})
+								)}
 							</tbody>
 						</table>
 					</div>
