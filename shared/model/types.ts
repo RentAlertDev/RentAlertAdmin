@@ -108,6 +108,13 @@ export type Broadcast = {
 	skipped: number
 	createdAt: string
 }
+export type BroadcastResult = {
+	broadcastId: number
+	totalRecipients: number
+	sent: number
+	failed: number
+	skipped: number
+}
 export type BroadcastRecipient = {
 	id: number
 	userId: number

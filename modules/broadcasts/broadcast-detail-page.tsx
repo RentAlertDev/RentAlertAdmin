@@ -6,6 +6,7 @@ import {
 	ArrowLeft,
 	CheckCircle2,
 	CircleOff,
+	Search,
 	Trash2,
 	XCircle
 } from 'lucide-react'
@@ -16,6 +17,7 @@ import { toast } from 'sonner'
 
 import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
+import { useDebouncedValue } from '@/shared/hooks/use-debounced-value'
 import { formatDateTime } from '@/shared/lib/format'
 import {
 	type SpringPageResponse,
@@ -52,7 +54,9 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 	const [page, setPage] = useState(0)
 	const [pageSize, setPageSize] = useState(50)
 	const [sort, setSort] = useState('createdAt,asc')
+	const [search, setSearch] = useState('')
 	const [confirmDelete, setConfirmDelete] = useState(false)
+	const debouncedSearch = useDebouncedValue(search).trim()
 	const queryClient = useQueryClient()
 	const router = useRouter()
 	const detail = useQuery({
@@ -63,17 +67,35 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 				.then(response => response.data)
 	})
 	const recipients = useQuery({
-		queryKey: ['broadcast-recipients', broadcastId, page, pageSize, sort],
+		queryKey: [
+			'broadcast-recipients',
+			broadcastId,
+			page,
+			pageSize,
+			sort,
+			debouncedSearch
+		],
 		queryFn: () =>
 			api
 				.get<
 					SpringPageResponse<BroadcastRecipient>
-				>(`/notifications/broadcasts/${broadcastId}/recipients`, { params: { page, size: pageSize, sort } })
+				>(`/notifications/broadcasts/${broadcastId}/recipients`, {
+					params: {
+						page,
+						size: pageSize,
+						sort,
+						...(debouncedSearch ? { search: debouncedSearch } : {})
+					}
+				})
 				.then(response => normalizePage(response.data)),
 		enabled: !detail.isLoading && !detail.isError
 	})
 	const changePageSize = (value: number) => {
 		setPageSize(value)
+		setPage(0)
+	}
+	const changeSearch = (value: string) => {
+		setSearch(value)
 		setPage(0)
 	}
 	const removeBroadcast = useMutation({
@@ -189,6 +211,23 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 						Результат доставки для каждого пользователя
 					</p>
 				</div>
+				<div className='flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-4'>
+					<div className='relative w-full max-w-sm'>
+						<Search
+							className='absolute left-3 top-3 text-slate-400'
+							size={18}
+						/>
+						<input
+							className='field !pl-10'
+							placeholder='Поиск по username или ID…'
+							value={search}
+							onChange={event => changeSearch(event.target.value)}
+						/>
+					</div>
+					<span className='ml-auto text-sm text-slate-500'>
+						Найдено: {recipients.data?.totalElements ?? 0}
+					</span>
+				</div>
 				{recipients.isError ? (
 					<ErrorState />
 				) : (
@@ -210,7 +249,13 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 								) : !recipients.data?.content?.length ? (
 									<tr>
 										<td colSpan={4}>
-											<EmptyState message='Получатели отсутствуют' />
+											<EmptyState
+												message={
+													debouncedSearch
+														? 'Ничего не найдено по запросу'
+														: 'Получатели отсутствуют'
+												}
+											/>
 										</td>
 									</tr>
 								) : (
