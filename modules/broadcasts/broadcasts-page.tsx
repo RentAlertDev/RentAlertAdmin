@@ -9,7 +9,11 @@ import { toast } from 'sonner'
 import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { formatDateTime } from '@/shared/lib/format'
-import type { Broadcast, Page } from '@/shared/model/types'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { Broadcast } from '@/shared/model/types'
 import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 
@@ -24,10 +28,10 @@ export function BroadcastsPage() {
 		queryKey: ['broadcasts', page, pageSize, sort],
 		queryFn: () =>
 			api
-				.get<Page<Broadcast>>('/notifications/broadcasts', {
+				.get<SpringPageResponse<Broadcast>>('/notifications/broadcasts', {
 					params: { page, size: pageSize, sort }
 				})
-				.then(response => response.data)
+				.then(response => normalizePage(response.data))
 	})
 	const changePageSize = (value: number) => {
 		setPageSize(value)

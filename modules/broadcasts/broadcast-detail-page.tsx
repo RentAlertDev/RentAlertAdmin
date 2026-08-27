@@ -17,7 +17,11 @@ import { toast } from 'sonner'
 import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { formatDateTime } from '@/shared/lib/format'
-import type { Broadcast, BroadcastRecipient, Page } from '@/shared/model/types'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { Broadcast, BroadcastRecipient } from '@/shared/model/types'
 import {
 	DetailHeaderSkeleton,
 	EmptyState,
@@ -63,9 +67,9 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 		queryFn: () =>
 			api
 				.get<
-					Page<BroadcastRecipient>
+					SpringPageResponse<BroadcastRecipient>
 				>(`/notifications/broadcasts/${broadcastId}/recipients`, { params: { page, size: pageSize, sort } })
-				.then(response => response.data),
+				.then(response => normalizePage(response.data)),
 		enabled: !detail.isLoading && !detail.isError
 	})
 	const changePageSize = (value: number) => {
