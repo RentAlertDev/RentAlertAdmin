@@ -75,6 +75,7 @@ export type AuditLog = {
 	id: number
 	eventName: string
 	eventDescription?: string
+	userId?: number
 	eventInitiator: 'INTERNAL' | 'USER' | 'ADMIN' | string
 	eventStatus?: string
 	createdAt: string
