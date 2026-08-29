@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { ArrowDownUp, Eye, Megaphone, Send, X } from 'lucide-react'
+import { ArrowDownUp, Eye, Megaphone, Pin, Send, X } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -34,6 +34,7 @@ export function BroadcastsPage() {
 	const [message, setMessage] = useState('')
 	const [audience, setAudience] = useState<'ALL' | 'SELECTED'>('ALL')
 	const [selected, setSelected] = useState<Map<number, string>>(new Map())
+	const [pin, setPin] = useState(false)
 	const queryClient = useQueryClient()
 	const broadcasts = useQuery({
 		queryKey: ['broadcasts', page, pageSize, sort],
@@ -77,6 +78,7 @@ export function BroadcastsPage() {
 		setMessage('')
 		setAudience('ALL')
 		setSelected(new Map())
+		setPin(false)
 	}
 	const send = useMutation({
 		mutationFn: () => {
@@ -84,7 +86,8 @@ export function BroadcastsPage() {
 			return api
 				.post<BroadcastResult>('/notifications/broadcast', {
 					message: message.trim(),
-					...(userIds.length ? { userIds } : {})
+					...(userIds.length ? { userIds } : {}),
+					...(pin ? { pin: true } : {})
 				})
 				.then(response => response.data)
 		},
@@ -180,6 +183,12 @@ export function BroadcastsPage() {
 												<p className='line-clamp-2 whitespace-normal break-words'>
 													{broadcast.message}
 												</p>
+												{broadcast.pinned && (
+													<span className='badge mt-1 gap-1 bg-amber-50 text-amber-700'>
+														<Pin size={12} />
+														Закреплено
+													</span>
+												)}
 											</td>
 											<td>
 												<b>
@@ -335,6 +344,26 @@ export function BroadcastsPage() {
 									{MAX_RECIPIENTS.toLocaleString('ru')}.
 								</p>
 							)}
+
+							<label className='mt-5 flex items-start gap-2 text-sm font-semibold'>
+								<input
+									type='checkbox'
+									className='mt-0.5 h-4 w-4'
+									checked={pin}
+									onChange={event =>
+										setPin(event.target.checked)
+									}
+								/>
+								<span>
+									Закрепить сообщение в чате бота
+									<span className='mt-0.5 block text-xs font-normal text-slate-400'>
+										После доставки сообщение будет
+										закреплено у каждого получателя. Ошибка
+										закрепления не влияет на статус
+										доставки.
+									</span>
+								</span>
+							</label>
 						</div>
 
 						<div className='mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4'>

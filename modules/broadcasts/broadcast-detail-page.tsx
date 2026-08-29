@@ -6,6 +6,7 @@ import {
 	ArrowLeft,
 	CheckCircle2,
 	CircleOff,
+	Pin,
 	Search,
 	Trash2,
 	XCircle
@@ -147,9 +148,17 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 						<ArrowLeft size={18} />
 					</Link>
 					<div>
-						<h1 className='text-3xl font-bold'>
-							Рассылка #{broadcast.id}
-						</h1>
+						<div className='flex flex-wrap items-center gap-3'>
+							<h1 className='text-3xl font-bold'>
+								Рассылка #{broadcast.id}
+							</h1>
+							{broadcast.pinned && (
+								<span className='badge gap-1 bg-amber-50 text-amber-700'>
+									<Pin size={12} />
+									Закреплено
+								</span>
+							)}
+						</div>
 						<p className='mt-1 text-slate-500'>
 							{formatDateTime(broadcast.createdAt)}
 						</p>

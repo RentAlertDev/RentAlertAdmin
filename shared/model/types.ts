@@ -138,6 +138,7 @@ export type Broadcast = {
 	sent: number
 	failed: number
 	skipped: number
+	pinned?: boolean
 	createdAt: string
 }
 export type BroadcastResult = {
