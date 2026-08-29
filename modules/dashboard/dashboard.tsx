@@ -14,7 +14,12 @@ import type {
 	UserActionSummary,
 	UserProfile
 } from '@/shared/model/types'
-import { ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	CardGridSkeleton,
+	ErrorState,
+	Skeleton,
+	TableSkeleton
+} from '@/shared/ui/page-state'
 import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const colors = [
@@ -74,7 +79,45 @@ export function Dashboard() {
 				>('/user-statistics/actions', { params: { since, limit: 10 } })
 				.then(r => normalize(r.data))
 	})
-	if (system.isLoading || actions.isLoading) return <LoadingState />
+	if (system.isLoading || actions.isLoading)
+		return (
+			<div className='space-y-6'>
+				<div className='flex flex-wrap items-end justify-between gap-4'>
+					<div className='space-y-2'>
+						<Skeleton className='h-8 w-72' />
+						<Skeleton className='h-4 w-96' />
+					</div>
+					<Skeleton className='h-10 w-40' />
+				</div>
+				<CardGridSkeleton count={4} />
+				<div className='grid gap-6 xl:grid-cols-[3fr_2fr]'>
+					<div className='card p-5'>
+						<Skeleton className='h-80 w-full' />
+					</div>
+					<div className='card p-5'>
+						<Skeleton className='h-80 w-full' />
+					</div>
+				</div>
+				<div className='card'>
+					<div className='table-wrap'>
+						<table className='data-table'>
+							<thead>
+								<tr>
+									<th>Пользователь</th>
+									<th>Последняя активность</th>
+									<th>Всего</th>
+									<th>В день</th>
+									<th>Категории</th>
+								</tr>
+							</thead>
+							<tbody>
+								<TableSkeleton columns={5} />
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		)
 	if (system.isError || actions.isError || !system.data) return <ErrorState />
 	const s = system.data
 	const newUsersToday = Number(

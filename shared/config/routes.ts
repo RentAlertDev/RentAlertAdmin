@@ -10,7 +10,8 @@ export const APP_ROUTES = {
 		BROADCASTS: '/admin/broadcasts',
 		AUDIT: '/admin/audit',
 		SCHEDULERS: '/admin/scheduler-settings',
-		broadcast: (broadcastId: number | string) => `/admin/broadcasts/${broadcastId}`,
+		broadcast: (broadcastId: number | string) =>
+			`/admin/broadcasts/${broadcastId}`,
 		user: (userId: number | string) => `/admin/users/${userId}`
 	}
 } as const

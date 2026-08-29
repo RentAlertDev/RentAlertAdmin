@@ -1,19 +1,31 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Database, RefreshCcw, Trash2, WalletCards } from 'lucide-react'
+import {
+	ArrowDownUp,
+	Database,
+	RefreshCcw,
+	Trash2,
+	WalletCards
+} from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { api } from '@/shared/api/http-client'
 import { formatDateTime, formatDuration } from '@/shared/lib/format'
-import type { JobSetting, Page } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { JobSetting } from '@/shared/model/types'
+import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function JobsPage() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [sort, setSort] = useState('startedAt,desc')
 	const [all, setAll] = useState(true)
 	const [confirm, setConfirm] = useState<{
 		url: string
@@ -22,14 +34,32 @@ export function JobsPage() {
 	} | null>(null)
 	const qc = useQueryClient()
 	const jobs = useQuery({
-		queryKey: ['jobs', page],
+		queryKey: ['jobs', page, pageSize, sort],
 		queryFn: () =>
 			api
-				.get<
-					Page<JobSetting>
-				>('/job-settings', { params: { page, size: 20, sort: 'startedAt,desc' } })
-				.then(r => r.data)
+				.get<SpringPageResponse<JobSetting>>('/job-settings', {
+					params: { page, size: pageSize, sort }
+				})
+				.then(r => normalizePage(r.data))
 	})
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
+	const toggleSort = (field: string) => {
+		setPage(0)
+		setSort(current =>
+			current === `${field},desc` ? `${field},asc` : `${field},desc`
+		)
+	}
+	const sortButton = (label: string, field: string) => (
+		<button
+			className='flex items-center gap-1'
+			onClick={() => toggleSort(field)}
+		>
+			{label} <ArrowDownUp size={14} />
+		</button>
+	)
 	const run = useMutation({
 		mutationFn: (url: string) => api.post(url),
 		onSuccess: () => {
@@ -126,27 +156,51 @@ export function JobsPage() {
 					<h2 className='text-lg font-bold'>История запусков</h2>
 					<RefreshButton queryKey={['jobs', page]} />
 				</div>
-				{jobs.isLoading ? (
-					<LoadingState />
-				) : jobs.isError ? (
+				{jobs.isError ? (
 					<ErrorState />
-				) : !jobs.data?.content?.length ? (
-					<EmptyState message='Запуски пока отсутствуют' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table'>
 							<thead>
 								<tr>
-									<th>Задача</th>
-									<th>Инициатор</th>
-									<th>Область</th>
-									<th>Записи</th>
-									<th>Время</th>
-									<th>Длительность</th>
+									<th>{sortButton('Задача', 'jobName')}</th>
+									<th>
+										{sortButton('Инициатор', 'initiator')}
+									</th>
+									<th>
+										{sortButton(
+											'Область',
+											'executionScope'
+										)}
+									</th>
+									<th>
+										{sortButton(
+											'Записи',
+											'affectedRecords'
+										)}
+									</th>
+									<th>
+										{sortButton('Время', 'startedAt')}
+									</th>
+									<th>
+										{sortButton(
+											'Длительность',
+											'executionTimeMs'
+										)}
+									</th>
 								</tr>
 							</thead>
 							<tbody>
-								{jobs.data.content.map((j, i) => (
+								{jobs.isLoading ? (
+									<TableSkeleton columns={6} />
+								) : !jobs.data?.content?.length ? (
+									<tr>
+										<td colSpan={6}>
+											<EmptyState message='Запуски пока отсутствуют' />
+										</td>
+									</tr>
+								) : (
+									jobs.data.content.map((j, i) => (
 									<tr
 										key={`${j.jobName}-${j.startedAt}-${i}`}
 									>
@@ -178,7 +232,8 @@ export function JobsPage() {
 											{formatDuration(j.executionTimeMs)}
 										</td>
 									</tr>
-								))}
+									))
+								)}
 							</tbody>
 						</table>
 					</div>
@@ -187,16 +242,27 @@ export function JobsPage() {
 					page={page}
 					totalPages={jobs.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 			{confirm && (
 				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
-					<div className='card max-w-md p-6' role='dialog' aria-modal='true' aria-labelledby='job-confirm-title'>
-						<h2 id='job-confirm-title' className='text-xl font-bold'>
+					<div
+						className='card w-full max-w-md p-6'
+						role='dialog'
+						aria-modal='true'
+						aria-labelledby='job-confirm-title'
+					>
+						<h2
+							id='job-confirm-title'
+							className='text-xl font-bold'
+						>
 							{confirm.title}
 						</h2>
 						<p className='my-3 text-slate-500'>
-							{confirm.description} Операцию нельзя отменить из панели.
+							{confirm.description} Операцию нельзя отменить из
+							панели.
 						</p>
 						<div className='flex justify-end gap-2'>
 							<button

@@ -75,6 +75,7 @@ export type AuditLog = {
 	id: number
 	eventName: string
 	eventDescription?: string
+	userId?: number
 	eventInitiator: 'INTERNAL' | 'USER' | 'ADMIN' | string
 	eventStatus?: string
 	createdAt: string
@@ -138,6 +139,13 @@ export type Broadcast = {
 	failed: number
 	skipped: number
 	createdAt: string
+}
+export type BroadcastResult = {
+	broadcastId: number
+	totalRecipients: number
+	sent: number
+	failed: number
+	skipped: number
 }
 export type BroadcastRecipient = {
 	id: number

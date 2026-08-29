@@ -15,7 +15,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import {
 	Bar,
 	BarChart,
@@ -26,6 +25,7 @@ import {
 	XAxis,
 	YAxis
 } from 'recharts'
+import { toast } from 'sonner'
 
 import { Status } from './users-list'
 import { api } from '@/shared/api/http-client'
@@ -41,7 +41,11 @@ import type {
 	UserActivityLog,
 	UserProfile
 } from '@/shared/model/types'
-import { ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	DetailHeaderSkeleton,
+	ErrorState,
+	Skeleton
+} from '@/shared/ui/page-state'
 import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const colors = [
@@ -104,7 +108,24 @@ export function UserDetail({ userId }: { userId: number }) {
 		onError: () => toast.error('Не удалось удалить пользователя')
 	})
 	if (profile.isLoading || summary.isLoading || log.isLoading)
-		return <LoadingState />
+		return (
+			<div className='space-y-6'>
+				<Skeleton className='h-4 w-48' />
+				<DetailHeaderSkeleton />
+				<div className='grid gap-4 md:grid-cols-3 xl:grid-cols-6'>
+					{Array.from({ length: 6 }, (_, index) => (
+						<div key={index} className='card p-4'>
+							<Skeleton className='h-5 w-5 rounded' />
+							<Skeleton className='mt-3 h-7 w-12' />
+							<Skeleton className='mt-2 h-3 w-20' />
+						</div>
+					))}
+				</div>
+				<div className='card p-5'>
+					<Skeleton className='h-96 w-full' />
+				</div>
+			</div>
+		)
 	if (profile.isError || summary.isError || log.isError || !profile.data)
 		return <ErrorState />
 	const p = profile.data,
@@ -165,42 +186,44 @@ export function UserDetail({ userId }: { userId: number }) {
 							: 'Не настроены'}
 					</div>
 				</div>
-			<div className='flex flex-wrap justify-end gap-2'>
-				<button
-					className='btn btn-soft'
-					disabled={updateRole.isPending || removeUser.isPending}
-					onClick={() =>
-						setConfirm({
-							title:
-								p.roleName === 'BLOCKED'
-									? 'Разблокировать пользователя?'
-									: 'Заблокировать пользователя?',
-							description:
-								p.roleName === 'BLOCKED'
-									? 'Пользователь снова получит доступ к системе.'
-									: 'Активная сессия пользователя будет немедленно завершена.',
-							action: 'block'
-						})
-					}
-				>
-					<Ban size={17} />
-					{p.roleName === 'BLOCKED' ? 'Разблокировать' : 'Заблокировать'}
-				</button>
-				<button
-					className='btn bg-red-600 text-white hover:bg-red-700'
-					disabled={updateRole.isPending || removeUser.isPending}
-					onClick={() =>
-						setConfirm({
-							title: 'Удалить пользователя?',
-							description:
-								'Профиль и связанные данные будут удалены без возможности восстановления.',
-							action: 'delete'
-						})
-					}
-				>
-					<Trash2 size={17} /> Удалить
-				</button>
-			</div>
+				<div className='flex flex-wrap justify-end gap-2'>
+					<button
+						className='btn btn-soft'
+						disabled={updateRole.isPending || removeUser.isPending}
+						onClick={() =>
+							setConfirm({
+								title:
+									p.roleName === 'BLOCKED'
+										? 'Разблокировать пользователя?'
+										: 'Заблокировать пользователя?',
+								description:
+									p.roleName === 'BLOCKED'
+										? 'Пользователь снова получит доступ к системе.'
+										: 'Активная сессия пользователя будет немедленно завершена.',
+								action: 'block'
+							})
+						}
+					>
+						<Ban size={17} />
+						{p.roleName === 'BLOCKED'
+							? 'Разблокировать'
+							: 'Заблокировать'}
+					</button>
+					<button
+						className='btn bg-red-600 text-white hover:bg-red-700'
+						disabled={updateRole.isPending || removeUser.isPending}
+						onClick={() =>
+							setConfirm({
+								title: 'Удалить пользователя?',
+								description:
+									'Профиль и связанные данные будут удалены без возможности восстановления.',
+								action: 'delete'
+							})
+						}
+					>
+						<Trash2 size={17} /> Удалить
+					</button>
+				</div>
 			</div>
 			<div className='grid gap-4 md:grid-cols-3 xl:grid-cols-6'>
 				<Metric icon={<LogIn />} label='Входы' value={s?.loginCount} />
@@ -295,24 +318,36 @@ export function UserDetail({ userId }: { userId: number }) {
 						aria-modal='true'
 						aria-labelledby='user-action-confirm-title'
 					>
-						<h2 id='user-action-confirm-title' className='text-xl font-bold'>
+						<h2
+							id='user-action-confirm-title'
+							className='text-xl font-bold'
+						>
 							{confirm.title}
 						</h2>
-						<p className='my-3 text-slate-500'>{confirm.description}</p>
+						<p className='my-3 text-slate-500'>
+							{confirm.description}
+						</p>
 						<div className='flex justify-end gap-2'>
-							<button className='btn btn-soft' onClick={() => setConfirm(null)}>
+							<button
+								className='btn btn-soft'
+								onClick={() => setConfirm(null)}
+							>
 								Отмена
 							</button>
 							<button
 								className={`btn ${confirm.action === 'delete' ? 'bg-red-600 text-white hover:bg-red-700' : 'btn-primary'}`}
-								disabled={updateRole.isPending || removeUser.isPending}
+								disabled={
+									updateRole.isPending || removeUser.isPending
+								}
 								onClick={() => {
 									if (confirm.action === 'delete') {
 										removeUser.mutate()
 										return
 									}
 									updateRole.mutate(
-										p.roleName === 'BLOCKED' ? 'USER' : 'BLOCKED'
+										p.roleName === 'BLOCKED'
+											? 'USER'
+											: 'BLOCKED'
 									)
 								}}
 							>

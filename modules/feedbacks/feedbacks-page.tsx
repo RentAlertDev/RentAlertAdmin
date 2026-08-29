@@ -6,26 +6,35 @@ import { useState } from 'react'
 
 import { api } from '@/shared/api/http-client'
 import { formatDateTime } from '@/shared/lib/format'
-import type { Feedback, Page } from '@/shared/model/types'
-import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
+import {
+	type SpringPageResponse,
+	normalizePage
+} from '@/shared/lib/normalize-page'
+import type { Feedback } from '@/shared/model/types'
+import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
 import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function FeedbacksPage() {
 	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
 	const [sort, setSort] = useState('createdAt,desc')
 	const [open, setOpen] = useState<Set<number>>(new Set())
 	const query = useQuery({
-		queryKey: ['feedbacks', page, sort],
+		queryKey: ['feedbacks', page, pageSize, sort],
 		queryFn: () =>
 			api
-				.get<
-					Page<Feedback>
-				>('/feedbacks', { params: { page, size: 20, sort } })
-				.then(r => r.data)
+				.get<SpringPageResponse<Feedback>>('/feedbacks', {
+					params: { page, size: pageSize, sort }
+				})
+				.then(r => normalizePage(r.data))
 	})
 	const toggleSort = (field: string) =>
 		setSort(s => (s === `${field},desc` ? `${field},asc` : `${field},desc`))
+	const changePageSize = (value: number) => {
+		setPageSize(value)
+		setPage(0)
+	}
 	return (
 		<div className='space-y-6'>
 			<div className='flex flex-wrap items-start justify-between gap-4'>
@@ -38,12 +47,8 @@ export function FeedbacksPage() {
 				<RefreshButton queryKey={['feedbacks', page, sort]} />
 			</div>
 			<section className='card'>
-				{query.isLoading ? (
-					<LoadingState />
-				) : query.isError ? (
+				{query.isError ? (
 					<ErrorState />
-				) : !query.data?.content?.length ? (
-					<EmptyState message='Отзывов пока нет' />
 				) : (
 					<div className='table-wrap'>
 						<table className='data-table table-fixed'>
@@ -55,7 +60,16 @@ export function FeedbacksPage() {
 							</colgroup>
 							<thead>
 								<tr>
-									<th>Автор</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
+												toggleSort('username')
+											}
+										>
+											Автор <ArrowDownUp size={14} />
+										</button>
+									</th>
 									<th>
 										<button
 											className='flex items-center gap-1'
@@ -79,7 +93,16 @@ export function FeedbacksPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{query.data.content.map(f => {
+								{query.isLoading ? (
+									<TableSkeleton columns={4} />
+								) : !query.data?.content?.length ? (
+									<tr>
+										<td colSpan={4}>
+											<EmptyState message='Отзывов пока нет' />
+										</td>
+									</tr>
+								) : (
+									query.data.content.map(f => {
 									const expanded = open.has(f.id)
 									return (
 										<tr key={f.id}>
@@ -172,7 +195,8 @@ export function FeedbacksPage() {
 											</td>
 										</tr>
 									)
-								})}
+								})
+								)}
 							</tbody>
 						</table>
 					</div>
@@ -181,6 +205,8 @@ export function FeedbacksPage() {
 					page={page}
 					totalPages={query.data?.totalPages || 0}
 					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={changePageSize}
 				/>
 			</section>
 		</div>

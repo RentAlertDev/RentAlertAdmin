@@ -112,6 +112,13 @@ button {
 .data-table tbody tr:hover {
 	background: #fafbfe;
 }
+.skeleton {
+	background: #e2e8f0;
+	border-radius: 8px;
+}
+.dark .skeleton {
+	background: #253347;
+}
 .badge {
 	display: inline-flex;
 	align-items: center;
@@ -205,6 +212,10 @@ button {
 		background-color 0.15s,
 		color 0.15s;
 }
+.mobile-drawer,
+.mobile-overlay {
+	display: none !important;
+}
 @media (max-width: 900px) {
 	.desktop-sidebar {
 		display: none !important;
@@ -214,6 +225,12 @@ button {
 	}
 	.mobile-nav {
 		display: flex !important;
+	}
+	.mobile-drawer {
+		display: flex !important;
+	}
+	.mobile-overlay {
+		display: block !important;
 	}
 	.page-pad {
 		padding: 18px !important;
