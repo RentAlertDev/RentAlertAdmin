@@ -15,6 +15,7 @@ import type {
 	UserProfile
 } from '@/shared/model/types'
 import { ErrorState, LoadingState } from '@/shared/ui/page-state'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const colors = [
 	'#5b5ce2',
@@ -203,11 +204,14 @@ export function Dashboard() {
 				</section>
 			</div>
 			<section className='card'>
-				<div className='p-5'>
-					<h2 className='text-lg font-bold'>Сводка активности</h2>
-					<p className='text-sm text-slate-500'>
-						10 самых активных пользователей
-					</p>
+				<div className='flex items-start justify-between gap-3 p-5'>
+					<div>
+						<h2 className='text-lg font-bold'>Сводка активности</h2>
+						<p className='text-sm text-slate-500'>
+							10 самых активных пользователей
+						</p>
+					</div>
+					<RefreshButton queryKey={['actions', since]} />
 				</div>
 				<div className='table-wrap'>
 					<table className='data-table'>

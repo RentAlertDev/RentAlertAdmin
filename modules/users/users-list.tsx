@@ -13,6 +13,7 @@ import { formatDateTime, initials } from '@/shared/lib/format'
 import type { Page, UserProfile } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function UsersList() {
 	const [page, setPage] = useState(0)
@@ -46,21 +47,26 @@ export function UsersList() {
 			</div>
 			<div className='card'>
 				<div className='flex items-center justify-between gap-3 border-b border-slate-100 p-4'>
-					<div className='relative w-full max-w-sm'>
-						<Search
-							className='absolute left-3 top-3 text-slate-400'
-							size={18}
-						/>
-						<input
-							className='field !pl-10'
-							placeholder='Поиск по username…'
-							value={search}
-							onChange={e => setSearch(e.target.value)}
-						/>
+					<div className='flex items-center gap-3 flex-1'>
+						<div className='relative w-full max-w-sm'>
+							<Search
+								className='absolute left-3 top-3 text-slate-400'
+								size={18}
+							/>
+							<input
+								className='field !pl-10'
+								placeholder='Поиск по username…'
+								value={search}
+								onChange={e => setSearch(e.target.value)}
+							/>
+						</div>
 					</div>
-					<span className='text-sm text-slate-500'>
-						Всего: {query.data?.totalElements || 0}
-					</span>
+					<div className='flex items-center gap-3'>
+						<span className='text-sm text-slate-500'>
+							Всего: {query.data?.totalElements || 0}
+						</span>
+						<RefreshButton queryKey={['profiles', page]} />
+					</div>
 				</div>
 				{query.isLoading ? (
 					<LoadingState />

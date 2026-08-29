@@ -16,6 +16,7 @@ import { formatDateTime } from '@/shared/lib/format'
 import type { AuditLogPage } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 type Initiator = 'ALL' | 'INTERNAL' | 'USER' | 'ADMIN'
 
@@ -91,13 +92,16 @@ export function AuditPage() {
 						История действий пользователей, администраторов и системы
 					</p>
 				</div>
-				<button
-					className='btn btn-soft text-red-600'
-					onClick={() => setShowCleanup(true)}
-				>
-					<Trash2 size={17} />
-					Очистить журнал
-				</button>
+				<div className='flex items-center gap-2'>
+					<RefreshButton queryKey={['audit', page, pageSize, sort, initiator]} />
+					<button
+						className='btn btn-soft text-red-600'
+						onClick={() => setShowCleanup(true)}
+					>
+						<Trash2 size={17} />
+						Очистить журнал
+					</button>
+				</div>
 			</div>
 
 			<section className='card'>

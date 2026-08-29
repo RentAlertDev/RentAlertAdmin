@@ -12,6 +12,7 @@ import { formatDateTime } from '@/shared/lib/format'
 import type { Broadcast, Page } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function BroadcastsPage() {
 	const [page, setPage] = useState(0)
@@ -57,9 +58,12 @@ export function BroadcastsPage() {
 					<h1 className='text-3xl font-bold'>Рассылки</h1>
 					<p className='mt-1 text-slate-500'>История уведомлений пользователям</p>
 				</div>
-				<button className='btn btn-primary' onClick={() => setModalOpen(true)}>
-					<Send size={17} /> Отправить уведомление
-				</button>
+				<div className='flex items-center gap-2'>
+					<RefreshButton queryKey={['broadcasts', page, sort]} />
+					<button className='btn btn-primary' onClick={() => setModalOpen(true)}>
+						<Send size={17} /> Отправить уведомление
+					</button>
+				</div>
 			</div>
 			<section className='card'>
 				{broadcasts.isLoading ? <LoadingState /> : broadcasts.isError ? <ErrorState /> : !broadcasts.data?.content?.length ? <EmptyState message='Рассылок пока нет' /> : (

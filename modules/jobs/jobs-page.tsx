@@ -10,6 +10,7 @@ import { formatDateTime, formatDuration } from '@/shared/lib/format'
 import type { JobSetting, Page } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function JobsPage() {
 	const [page, setPage] = useState(0)
@@ -121,8 +122,9 @@ export function JobsPage() {
 				/>
 			</section>
 			<section className='card'>
-				<div className='p-5'>
+				<div className='flex items-center justify-between gap-3 border-b border-slate-100 p-5'>
 					<h2 className='text-lg font-bold'>История запусков</h2>
+					<RefreshButton queryKey={['jobs', page]} />
 				</div>
 				{jobs.isLoading ? (
 					<LoadingState />

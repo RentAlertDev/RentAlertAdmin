@@ -13,6 +13,7 @@ import { formatDateTime } from '@/shared/lib/format'
 import type { Broadcast, BroadcastRecipient, Page } from '@/shared/model/types'
 import { EmptyState, ErrorState, LoadingState } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const statusInfo = {
 	SENT: { label: 'Отправлено', className: 'bg-emerald-50 text-emerald-700', icon: CheckCircle2 },
@@ -77,7 +78,7 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 				</div>
 			</section>
 			<section className='card'>
-				<div className='p-5'><h2 className='text-lg font-bold'>Получатели</h2><p className='mt-1 text-sm text-slate-500'>Результат доставки для каждого пользователя</p></div>
+				<div className='flex items-start justify-between gap-3 p-5'><div><h2 className='text-lg font-bold'>Получатели</h2><p className='mt-1 text-sm text-slate-500'>Результат доставки для каждого пользователя</p></div><RefreshButton queryKey={['broadcast-recipients', broadcastId, page, sort]} /></div>
 				{recipients.isLoading ? <LoadingState /> : recipients.isError ? <ErrorState /> : !recipients.data?.content?.length ? <EmptyState message='Получатели отсутствуют' /> : (
 					<div className='table-wrap'><table className='data-table'><thead><tr><th>{sortButton('Пользователь', 'username')}</th><th>{sortButton('Статус', 'status')}</th><th>Причина</th><th>{sortButton('Дата', 'createdAt')}</th></tr></thead><tbody>{recipients.data.content.map(recipient => {
 						const info = statusInfo[recipient.status]
