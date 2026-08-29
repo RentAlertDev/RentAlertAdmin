@@ -309,11 +309,16 @@ function SettingsCard({
 						: 'Уведомления выкл.'}
 				</span>
 			</div>
-			<dl className='mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm'>
+			<dl className='mt-4 space-y-2 text-sm'>
 				{rows.map(([label, value]) => (
-					<div key={label} className='contents'>
-						<dt className='text-slate-500'>{label}</dt>
-						<dd className='text-right font-semibold'>{value}</dd>
+					<div
+						key={label}
+						className='flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5'
+					>
+						<dt className='shrink-0 text-slate-500'>{label}</dt>
+						<dd className='min-w-0 break-all text-left font-semibold sm:text-right'>
+							{value}
+						</dd>
 					</div>
 				))}
 			</dl>
@@ -406,7 +411,7 @@ function SettingsEditor({
 			}
 		>
 			<div
-				className='card w-full max-w-2xl p-6'
+				className='card flex max-h-[90vh] w-full max-w-2xl flex-col p-6'
 				role='dialog'
 				aria-modal='true'
 				aria-labelledby='scheduler-editor-title'
@@ -429,170 +434,175 @@ function SettingsEditor({
 					</button>
 				</div>
 
-				<div className='mt-5 grid gap-4 sm:grid-cols-2'>
-					<Field label='Провайдер' error={errors.providerName}>
-						<select
-							className='field'
-							value={form.providerName}
-							disabled={mode === 'edit'}
-							onChange={event =>
-								set('providerName', event.target.value)
-							}
+				<div className='-mr-2 mt-5 flex-1 overflow-y-auto pr-2'>
+					<div className='grid gap-4 sm:grid-cols-2'>
+						<Field label='Провайдер' error={errors.providerName}>
+							<select
+								className='field'
+								value={form.providerName}
+								disabled={mode === 'edit'}
+								onChange={event =>
+									set('providerName', event.target.value)
+								}
+							>
+								{availableProviders.map(provider => (
+									<option key={provider} value={provider}>
+										{provider}
+									</option>
+								))}
+							</select>
+						</Field>
+						<Field
+							label='Интервал опроса, мс'
+							error={errors.fixedRateMs}
+							hint='Не менее 10000'
 						>
-							{availableProviders.map(provider => (
-								<option key={provider} value={provider}>
-									{provider}
-								</option>
-							))}
-						</select>
-					</Field>
-					<Field
-						label='Интервал опроса, мс'
-						error={errors.fixedRateMs}
-						hint='Не менее 10000'
-					>
-						<input
-							type='number'
-							className='field'
-							min={10000}
-							step={1000}
-							value={form.fixedRateMs}
-							onChange={event =>
-								set('fixedRateMs', event.target.value)
-							}
-						/>
-					</Field>
-					<Field
-						label='Размер страницы'
-						error={errors.pageSize}
-						hint='От 1 до 500'
-					>
-						<input
-							type='number'
-							className='field'
-							min={1}
-							max={500}
-							value={form.pageSize}
-							onChange={event =>
-								set('pageSize', event.target.value)
-							}
-						/>
-					</Field>
-					<Field label='ID категории' error={errors.categoryId}>
-						<input
-							type='number'
-							className='field'
-							value={form.categoryId}
-							onChange={event =>
-								set('categoryId', event.target.value)
-							}
-						/>
-					</Field>
-					<Field label='ID региона' error={errors.regionId}>
-						<input
-							className='field'
-							maxLength={255}
-							value={form.regionId}
-							onChange={event =>
-								set('regionId', event.target.value)
-							}
-						/>
-					</Field>
-					<Field label='Валюта цены' error={errors.priceCurrency}>
-						<select
-							className='field'
-							value={form.priceCurrency}
-							onChange={event =>
-								set('priceCurrency', event.target.value)
-							}
+							<input
+								type='number'
+								className='field'
+								min={10000}
+								step={1000}
+								value={form.fixedRateMs}
+								onChange={event =>
+									set('fixedRateMs', event.target.value)
+								}
+							/>
+						</Field>
+						<Field
+							label='Размер страницы'
+							error={errors.pageSize}
+							hint='От 1 до 500'
 						>
-							<option value=''>Не задана</option>
-							{CURRENCIES.map(currency => (
-								<option key={currency} value={currency}>
-									{currency}
-								</option>
-							))}
-						</select>
-					</Field>
-					<Field label='Цена от' error={errors.priceFrom}>
-						<input
-							type='number'
-							className='field'
-							min={0}
-							value={form.priceFrom}
-							onChange={event =>
-								set('priceFrom', event.target.value)
-							}
-						/>
-					</Field>
-					<Field label='Цена до' error={errors.priceTo}>
-						<input
-							type='number'
-							className='field'
-							min={0}
-							value={form.priceTo}
-							onChange={event =>
-								set('priceTo', event.target.value)
-							}
-						/>
-					</Field>
-					<Field label='Поле сортировки' error={errors.sortBy}>
-						<input
-							className='field'
-							maxLength={50}
-							value={form.sortBy}
-							onChange={event =>
-								set('sortBy', event.target.value)
-							}
-						/>
-					</Field>
-					<Field
-						label='Направление сортировки'
-						error={errors.sortOrder}
-					>
-						<select
-							className='field'
-							value={form.sortOrder}
-							onChange={event =>
-								set('sortOrder', event.target.value)
-							}
+							<input
+								type='number'
+								className='field'
+								min={1}
+								max={500}
+								value={form.pageSize}
+								onChange={event =>
+									set('pageSize', event.target.value)
+								}
+							/>
+						</Field>
+						<Field label='ID категории' error={errors.categoryId}>
+							<input
+								type='number'
+								className='field'
+								value={form.categoryId}
+								onChange={event =>
+									set('categoryId', event.target.value)
+								}
+							/>
+						</Field>
+						<Field label='ID региона' error={errors.regionId}>
+							<input
+								className='field'
+								maxLength={255}
+								value={form.regionId}
+								onChange={event =>
+									set('regionId', event.target.value)
+								}
+							/>
+						</Field>
+						<Field label='Валюта цены' error={errors.priceCurrency}>
+							<select
+								className='field'
+								value={form.priceCurrency}
+								onChange={event =>
+									set('priceCurrency', event.target.value)
+								}
+							>
+								<option value=''>Не задана</option>
+								{CURRENCIES.map(currency => (
+									<option key={currency} value={currency}>
+										{currency}
+									</option>
+								))}
+							</select>
+						</Field>
+						<Field label='Цена от' error={errors.priceFrom}>
+							<input
+								type='number'
+								className='field'
+								min={0}
+								value={form.priceFrom}
+								onChange={event =>
+									set('priceFrom', event.target.value)
+								}
+							/>
+						</Field>
+						<Field label='Цена до' error={errors.priceTo}>
+							<input
+								type='number'
+								className='field'
+								min={0}
+								value={form.priceTo}
+								onChange={event =>
+									set('priceTo', event.target.value)
+								}
+							/>
+						</Field>
+						<Field label='Поле сортировки' error={errors.sortBy}>
+							<input
+								className='field'
+								maxLength={50}
+								value={form.sortBy}
+								onChange={event =>
+									set('sortBy', event.target.value)
+								}
+							/>
+						</Field>
+						<Field
+							label='Направление сортировки'
+							error={errors.sortOrder}
 						>
-							{SORT_ORDERS.map(order => (
-								<option key={order} value={order}>
-									{order}
-								</option>
-							))}
-						</select>
-					</Field>
+							<select
+								className='field'
+								value={form.sortOrder}
+								onChange={event =>
+									set('sortOrder', event.target.value)
+								}
+							>
+								{SORT_ORDERS.map(order => (
+									<option key={order} value={order}>
+										{order}
+									</option>
+								))}
+							</select>
+						</Field>
+					</div>
+
+					<div className='mt-4 flex flex-wrap gap-5'>
+						<label className='flex items-center gap-2 text-sm font-semibold'>
+							<input
+								type='checkbox'
+								checked={form.schedulerEnabled}
+								onChange={event =>
+									set(
+										'schedulerEnabled',
+										event.target.checked
+									)
+								}
+							/>
+							Планировщик включён
+						</label>
+						<label className='flex items-center gap-2 text-sm font-semibold'>
+							<input
+								type='checkbox'
+								checked={form.notificationsEnabled}
+								onChange={event =>
+									set(
+										'notificationsEnabled',
+										event.target.checked
+									)
+								}
+							/>
+							Уведомления включены
+						</label>
+					</div>
 				</div>
 
-				<div className='mt-4 flex flex-wrap gap-5'>
-					<label className='flex items-center gap-2 text-sm font-semibold'>
-						<input
-							type='checkbox'
-							checked={form.schedulerEnabled}
-							onChange={event =>
-								set('schedulerEnabled', event.target.checked)
-							}
-						/>
-						Планировщик включён
-					</label>
-					<label className='flex items-center gap-2 text-sm font-semibold'>
-						<input
-							type='checkbox'
-							checked={form.notificationsEnabled}
-							onChange={event =>
-								set(
-									'notificationsEnabled',
-									event.target.checked
-								)
-							}
-						/>
-						Уведомления включены
-					</label>
-				</div>
-
-				<div className='mt-6 flex justify-end gap-2'>
+				<div className='mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4'>
 					<button className='btn btn-soft' onClick={onClose}>
 						Отмена
 					</button>
