@@ -88,6 +88,37 @@ export type AuditLogPage = {
 		totalPages: number
 	}
 }
+export type SchedulerSettings = {
+	id: number
+	schedulerEnabled: boolean
+	providerName: 'KUFAR' | 'REALT' | 'ONLINER' | string
+	notificationsEnabled: boolean
+	fixedRateMs: number
+	pageSize: number
+	priceFrom?: number
+	priceTo?: number
+	priceCurrency?: string
+	regionId?: string
+	sortBy?: string
+	sortOrder?: string
+	categoryId?: number
+	createdAt?: string
+	updatedAt?: string
+}
+export type SchedulerSettingsRequest = {
+	providerName: string
+	schedulerEnabled: boolean
+	notificationsEnabled: boolean
+	fixedRateMs: number
+	pageSize: number
+	priceFrom?: number
+	priceTo?: number
+	priceCurrency?: string
+	regionId: string
+	sortBy: string
+	sortOrder: string
+	categoryId: number
+}
 export type Feedback = {
 	id: number
 	userId: number
