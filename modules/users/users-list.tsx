@@ -17,6 +17,7 @@ import {
 import type { UserProfile } from '@/shared/model/types'
 import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function UsersList() {
 	const [page, setPage] = useState(0)
@@ -76,9 +77,20 @@ export function UsersList() {
 							onChange={e => changeSearch(e.target.value)}
 						/>
 					</div>
-					<span className='text-sm text-slate-500'>
-						Всего: {query.data?.totalElements ?? 0}
-					</span>
+					<div className='flex items-center gap-3'>
+						<span className='text-sm text-slate-500'>
+							Всего: {query.data?.totalElements ?? 0}
+						</span>
+						<RefreshButton
+							queryKey={[
+								'profiles',
+								page,
+								pageSize,
+								sort,
+								filter
+							]}
+						/>
+					</div>
 				</div>
 				{query.isError ? (
 					<ErrorState />
@@ -125,55 +137,59 @@ export function UsersList() {
 									</tr>
 								) : (
 									users.map(u => (
-									<tr key={u.userId}>
-										<td>
-											<div className='flex items-center gap-3'>
-												{u.photoUrl ? (
-													<Image
-														src={u.photoUrl}
-														alt=''
-														width={40}
-														height={40}
-														unoptimized
-														className='h-10 w-10 rounded-full object-cover'
-													/>
-												) : (
-													<span className='grid h-10 w-10 place-items-center rounded-full bg-indigo-100 font-bold text-indigo-700'>
-														{initials(u.username)}
-													</span>
-												)}
-												<div>
-													<b>
-														@
-														{u.username ||
-															'без username'}
-													</b>
-													<div className='text-xs text-slate-400'>
-														ID {u.userId}
+										<tr key={u.userId}>
+											<td>
+												<div className='flex items-center gap-3'>
+													{u.photoUrl ? (
+														<Image
+															src={u.photoUrl}
+															alt=''
+															width={40}
+															height={40}
+															unoptimized
+															className='h-10 w-10 rounded-full object-cover'
+														/>
+													) : (
+														<span className='grid h-10 w-10 place-items-center rounded-full bg-indigo-100 font-bold text-indigo-700'>
+															{initials(
+																u.username
+															)}
+														</span>
+													)}
+													<div>
+														<b>
+															@
+															{u.username ||
+																'без username'}
+														</b>
+														<div className='text-xs text-slate-400'>
+															ID {u.userId}
+														</div>
 													</div>
 												</div>
-											</div>
-										</td>
-										<td>
-											<Status value={u.botStatus} />
-										</td>
-										<td>{formatDateTime(u.lastLogin)}</td>
-										<td>
-											{u.quietFrom && u.quietTo
-												? `${u.quietFrom} – ${u.quietTo}`
-												: '—'}
-										</td>
-										<td>
-											<Link
-												className='btn btn-soft'
-												href={APP_ROUTES.ADMIN.user(
-													u.userId
-												)}
-											>
-												Профиль 360°
-											</Link>
-										</td>
-									</tr>
+											</td>
+											<td>
+												<Status value={u.botStatus} />
+											</td>
+											<td>
+												{formatDateTime(u.lastLogin)}
+											</td>
+											<td>
+												{u.quietFrom && u.quietTo
+													? `${u.quietFrom} – ${u.quietTo}`
+													: '—'}
+											</td>
+											<td>
+												<Link
+													className='btn btn-soft'
+													href={APP_ROUTES.ADMIN.user(
+														u.userId
+													)}
+												>
+													Профиль 360°
+												</Link>
+											</td>
+										</tr>
 									))
 								)}
 							</tbody>

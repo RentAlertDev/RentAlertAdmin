@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { ArrowDownUp, Eye, Megaphone, Send, X } from 'lucide-react'
+import { ArrowDownUp, Eye, Megaphone, Pin, Send, X } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -22,6 +22,7 @@ import type {
 } from '@/shared/model/types'
 import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const MAX_RECIPIENTS = 10000
 
@@ -33,14 +34,18 @@ export function BroadcastsPage() {
 	const [message, setMessage] = useState('')
 	const [audience, setAudience] = useState<'ALL' | 'SELECTED'>('ALL')
 	const [selected, setSelected] = useState<Map<number, string>>(new Map())
+	const [pin, setPin] = useState(false)
 	const queryClient = useQueryClient()
 	const broadcasts = useQuery({
 		queryKey: ['broadcasts', page, pageSize, sort],
 		queryFn: () =>
 			api
-				.get<SpringPageResponse<Broadcast>>('/notifications/broadcasts', {
-					params: { page, size: pageSize, sort }
-				})
+				.get<SpringPageResponse<Broadcast>>(
+					'/notifications/broadcasts',
+					{
+						params: { page, size: pageSize, sort }
+					}
+				)
 				.then(response => normalizePage(response.data))
 	})
 	const changePageSize = (value: number) => {
@@ -61,9 +66,7 @@ export function BroadcastsPage() {
 			{label} <ArrowDownUp size={14} />
 		</button>
 	)
-	const toggleRecipient = (
-		user: Pick<UserProfile, 'userId' | 'username'>
-	) =>
+	const toggleRecipient = (user: Pick<UserProfile, 'userId' | 'username'>) =>
 		setSelected(current => {
 			const next = new Map(current)
 			if (next.has(user.userId)) next.delete(user.userId)
@@ -75,15 +78,16 @@ export function BroadcastsPage() {
 		setMessage('')
 		setAudience('ALL')
 		setSelected(new Map())
+		setPin(false)
 	}
 	const send = useMutation({
 		mutationFn: () => {
-			const userIds =
-				audience === 'SELECTED' ? [...selected.keys()] : []
+			const userIds = audience === 'SELECTED' ? [...selected.keys()] : []
 			return api
 				.post<BroadcastResult>('/notifications/broadcast', {
 					message: message.trim(),
-					...(userIds.length ? { userIds } : {})
+					...(userIds.length ? { userIds } : {}),
+					...(pin ? { pin: true } : {})
 				})
 				.then(response => response.data)
 		},
@@ -106,8 +110,7 @@ export function BroadcastsPage() {
 	const canSend =
 		Boolean(message.trim()) &&
 		!send.isPending &&
-		(audience === 'ALL' ||
-			(selected.size > 0 && !tooManyRecipients))
+		(audience === 'ALL' || (selected.size > 0 && !tooManyRecipients))
 	return (
 		<div className='space-y-6'>
 			<div className='flex flex-wrap items-start justify-between gap-4'>
@@ -117,12 +120,17 @@ export function BroadcastsPage() {
 						История уведомлений пользователям
 					</p>
 				</div>
-				<button
-					className='btn btn-primary'
-					onClick={() => setModalOpen(true)}
-				>
-					<Send size={17} /> Отправить уведомление
-				</button>
+				<div className='flex items-center gap-2'>
+					<RefreshButton
+						queryKey={['broadcasts', page, pageSize, sort]}
+					/>
+					<button
+						className='btn btn-primary'
+						onClick={() => setModalOpen(true)}
+					>
+						<Send size={17} /> Отправить уведомление
+					</button>
+				</div>
 			</div>
 			<section className='card'>
 				{broadcasts.isError ? (
@@ -170,56 +178,63 @@ export function BroadcastsPage() {
 									</tr>
 								) : (
 									broadcasts.data.content.map(broadcast => (
-									<tr key={broadcast.id}>
-										<td className='max-w-md'>
-											<p className='line-clamp-2 whitespace-normal break-words'>
-												{broadcast.message}
-											</p>
-										</td>
-										<td>
-											<b>
-												@
-												{broadcast.createdByUsername ||
-													'без username'}
-											</b>
-											<div className='text-xs text-slate-400'>
-												ID {broadcast.createdByUserId}
-											</div>
-										</td>
-										<td>{broadcast.totalRecipients}</td>
-										<td>
-											<span className='badge bg-emerald-50 text-emerald-700'>
-												{broadcast.sent}
-											</span>
-										</td>
-										<td>
-											<span className='badge bg-red-50 text-red-700'>
-												{broadcast.failed}
-											</span>
-										</td>
-										<td>
-											<span className='badge bg-slate-100 text-slate-600'>
-												{broadcast.skipped}
-											</span>
-										</td>
-										<td className='whitespace-nowrap'>
-											{formatDateTime(
-												broadcast.createdAt
-											)}
-										</td>
-										<td>
-											<Link
-												className='btn btn-soft !p-2'
-												href={APP_ROUTES.ADMIN.broadcast(
-													broadcast.id
+										<tr key={broadcast.id}>
+											<td className='max-w-md'>
+												<p className='line-clamp-2 whitespace-normal break-words'>
+													{broadcast.message}
+												</p>
+												{broadcast.pinned && (
+													<span className='badge mt-1 gap-1 bg-amber-50 text-amber-700'>
+														<Pin size={12} />
+														Закреплено
+													</span>
 												)}
-												aria-label='Открыть рассылку'
-												title='Открыть рассылку'
-											>
-												<Eye size={17} />
-											</Link>
-										</td>
-									</tr>
+											</td>
+											<td>
+												<b>
+													@
+													{broadcast.createdByUsername ||
+														'без username'}
+												</b>
+												<div className='text-xs text-slate-400'>
+													ID{' '}
+													{broadcast.createdByUserId}
+												</div>
+											</td>
+											<td>{broadcast.totalRecipients}</td>
+											<td>
+												<span className='badge bg-emerald-50 text-emerald-700'>
+													{broadcast.sent}
+												</span>
+											</td>
+											<td>
+												<span className='badge bg-red-50 text-red-700'>
+													{broadcast.failed}
+												</span>
+											</td>
+											<td>
+												<span className='badge bg-slate-100 text-slate-600'>
+													{broadcast.skipped}
+												</span>
+											</td>
+											<td className='whitespace-nowrap'>
+												{formatDateTime(
+													broadcast.createdAt
+												)}
+											</td>
+											<td>
+												<Link
+													className='btn btn-soft !p-2'
+													href={APP_ROUTES.ADMIN.broadcast(
+														broadcast.id
+													)}
+													aria-label='Открыть рассылку'
+													title='Открыть рассылку'
+												>
+													<Eye size={17} />
+												</Link>
+											</td>
+										</tr>
 									))
 								)}
 							</tbody>
@@ -304,15 +319,14 @@ export function BroadcastsPage() {
 										name='broadcast-audience'
 										className='h-4 w-4'
 										checked={audience === 'SELECTED'}
-										onChange={() =>
-											setAudience('SELECTED')
-										}
+										onChange={() => setAudience('SELECTED')}
 									/>
 									Выбранным пользователям
 								</label>
 							</div>
 							<p className='mt-1 text-xs text-slate-400'>
-								Можно выбрать до {MAX_RECIPIENTS.toLocaleString('ru')}{' '}
+								Можно выбрать до{' '}
+								{MAX_RECIPIENTS.toLocaleString('ru')}{' '}
 								получателей. Администраторы всегда исключаются.
 							</p>
 
@@ -330,10 +344,33 @@ export function BroadcastsPage() {
 									{MAX_RECIPIENTS.toLocaleString('ru')}.
 								</p>
 							)}
+
+							<label className='mt-5 flex items-start gap-2 text-sm font-semibold'>
+								<input
+									type='checkbox'
+									className='mt-0.5 h-4 w-4'
+									checked={pin}
+									onChange={event =>
+										setPin(event.target.checked)
+									}
+								/>
+								<span>
+									Закрепить сообщение в чате бота
+									<span className='mt-0.5 block text-xs font-normal text-slate-400'>
+										После доставки сообщение будет
+										закреплено у каждого получателя. Ошибка
+										закрепления не влияет на статус
+										доставки.
+									</span>
+								</span>
+							</label>
 						</div>
 
 						<div className='mt-5 flex justify-end gap-2 border-t border-slate-100 pt-4'>
-							<button className='btn btn-soft' onClick={closeModal}>
+							<button
+								className='btn btn-soft'
+								onClick={closeModal}
+							>
 								Отмена
 							</button>
 							<button

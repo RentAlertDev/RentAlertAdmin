@@ -7,6 +7,7 @@ import {
 	Megaphone,
 	Menu,
 	MessageSquare,
+	Timer,
 	Users,
 	Wrench,
 	X
@@ -23,6 +24,7 @@ const links = [
 	{ href: APP_ROUTES.ADMIN.DASHBOARD, label: 'Дашборд', icon: BarChart3 },
 	{ href: APP_ROUTES.ADMIN.USERS, label: 'Пользователи', icon: Users },
 	{ href: APP_ROUTES.ADMIN.JOBS, label: 'Фоновые задачи', icon: Wrench },
+	{ href: APP_ROUTES.ADMIN.SCHEDULERS, label: 'Планировщики', icon: Timer },
 	{ href: APP_ROUTES.ADMIN.FEEDBACKS, label: 'Отзывы', icon: MessageSquare },
 	{ href: APP_ROUTES.ADMIN.BROADCASTS, label: 'Рассылки', icon: Megaphone },
 	{ href: APP_ROUTES.ADMIN.AUDIT, label: 'Аудит', icon: ClipboardList }

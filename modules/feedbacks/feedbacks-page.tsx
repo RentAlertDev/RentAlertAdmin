@@ -13,6 +13,7 @@ import {
 import type { Feedback } from '@/shared/model/types'
 import { EmptyState, ErrorState, TableSkeleton } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 export function FeedbacksPage() {
 	const [page, setPage] = useState(0)
@@ -36,11 +37,14 @@ export function FeedbacksPage() {
 	}
 	return (
 		<div className='space-y-6'>
-			<div>
-				<h1 className='text-3xl font-bold'>Отзывы</h1>
-				<p className='mt-1 text-slate-500'>
-					Отзывы пользователей в режиме только для чтения
-				</p>
+			<div className='flex flex-wrap items-start justify-between gap-4'>
+				<div>
+					<h1 className='text-3xl font-bold'>Отзывы</h1>
+					<p className='mt-1 text-slate-500'>
+						Отзывы пользователей в режиме только для чтения
+					</p>
+				</div>
+				<RefreshButton queryKey={['feedbacks', page, sort]} />
 			</div>
 			<section className='card'>
 				{query.isError ? (

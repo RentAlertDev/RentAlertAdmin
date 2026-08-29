@@ -46,6 +46,7 @@ import {
 	ErrorState,
 	Skeleton
 } from '@/shared/ui/page-state'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const colors = [
 	'#5b5ce2',
@@ -262,7 +263,7 @@ export function UserDetail({ userId }: { userId: number }) {
 							Распределение событий пользователя
 						</p>
 					</div>
-					<div className='flex gap-3'>
+					<div className='flex items-end gap-3'>
 						<label className='text-xs font-semibold'>
 							С
 							<input
@@ -281,6 +282,9 @@ export function UserDetail({ userId }: { userId: number }) {
 								onChange={e => setUntil(e.target.value)}
 							/>
 						</label>
+						<RefreshButton
+							queryKey={['log', userId, since, until]}
+						/>
 					</div>
 				</div>
 				<div className='h-96'>

@@ -6,6 +6,7 @@ import {
 	ArrowLeft,
 	CheckCircle2,
 	CircleOff,
+	Pin,
 	Search,
 	Trash2,
 	XCircle
@@ -31,6 +32,7 @@ import {
 	TableSkeleton
 } from '@/shared/ui/page-state'
 import { Pagination } from '@/shared/ui/pagination'
+import { RefreshButton } from '@/shared/ui/refresh-button'
 
 const statusInfo = {
 	SENT: {
@@ -77,16 +79,19 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 		],
 		queryFn: () =>
 			api
-				.get<
-					SpringPageResponse<BroadcastRecipient>
-				>(`/notifications/broadcasts/${broadcastId}/recipients`, {
-					params: {
-						page,
-						size: pageSize,
-						sort,
-						...(debouncedSearch ? { search: debouncedSearch } : {})
+				.get<SpringPageResponse<BroadcastRecipient>>(
+					`/notifications/broadcasts/${broadcastId}/recipients`,
+					{
+						params: {
+							page,
+							size: pageSize,
+							sort,
+							...(debouncedSearch
+								? { search: debouncedSearch }
+								: {})
+						}
 					}
-				})
+				)
 				.then(response => normalizePage(response.data)),
 		enabled: !detail.isLoading && !detail.isError
 	})
@@ -143,9 +148,17 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 						<ArrowLeft size={18} />
 					</Link>
 					<div>
-						<h1 className='text-3xl font-bold'>
-							Рассылка #{broadcast.id}
-						</h1>
+						<div className='flex flex-wrap items-center gap-3'>
+							<h1 className='text-3xl font-bold'>
+								Рассылка #{broadcast.id}
+							</h1>
+							{broadcast.pinned && (
+								<span className='badge gap-1 bg-amber-50 text-amber-700'>
+									<Pin size={12} />
+									Закреплено
+								</span>
+							)}
+						</div>
 						<p className='mt-1 text-slate-500'>
 							{formatDateTime(broadcast.createdAt)}
 						</p>
@@ -205,11 +218,23 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 				</div>
 			</section>
 			<section className='card'>
-				<div className='p-5'>
-					<h2 className='text-lg font-bold'>Получатели</h2>
-					<p className='mt-1 text-sm text-slate-500'>
-						Результат доставки для каждого пользователя
-					</p>
+				<div className='flex flex-wrap items-start justify-between gap-3 p-5'>
+					<div>
+						<h2 className='text-lg font-bold'>Получатели</h2>
+						<p className='mt-1 text-sm text-slate-500'>
+							Результат доставки для каждого пользователя
+						</p>
+					</div>
+					<RefreshButton
+						queryKey={[
+							'broadcast-recipients',
+							broadcastId,
+							page,
+							pageSize,
+							sort,
+							debouncedSearch
+						]}
+					/>
 				</div>
 				<div className='flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-4'>
 					<div className='relative w-full max-w-sm'>
@@ -260,50 +285,55 @@ export function BroadcastDetailPage({ broadcastId }: { broadcastId: string }) {
 									</tr>
 								) : (
 									recipients.data.content.map(recipient => {
-									const info = statusInfo[recipient.status]
-									const Icon = info.icon
-									return (
-										<tr key={recipient.id}>
-											<td>
-												<Link
-													className='block hover:text-indigo-600'
-													href={APP_ROUTES.ADMIN.user(
-														recipient.userId
-													)}
-												>
-													<b>
-														@
-														{recipient.username ||
-															'без username'}
-													</b>
-													<div className='text-xs text-slate-400'>
-														ID {recipient.userId}
-													</div>
-													{recipient.photoUrl && (
-														<div className='max-w-xs truncate text-xs text-slate-400'>
-															{recipient.photoUrl}
+										const info =
+											statusInfo[recipient.status]
+										const Icon = info.icon
+										return (
+											<tr key={recipient.id}>
+												<td>
+													<Link
+														className='block hover:text-indigo-600'
+														href={APP_ROUTES.ADMIN.user(
+															recipient.userId
+														)}
+													>
+														<b>
+															@
+															{recipient.username ||
+																'без username'}
+														</b>
+														<div className='text-xs text-slate-400'>
+															ID{' '}
+															{recipient.userId}
 														</div>
+														{recipient.photoUrl && (
+															<div className='max-w-xs truncate text-xs text-slate-400'>
+																{
+																	recipient.photoUrl
+																}
+															</div>
+														)}
+													</Link>
+												</td>
+												<td>
+													<span
+														className={`badge gap-1 ${info.className}`}
+													>
+														<Icon size={14} />
+														{info.label}
+													</span>
+												</td>
+												<td className='max-w-md whitespace-normal break-words'>
+													{recipient.errorMessage ||
+														'—'}
+												</td>
+												<td className='whitespace-nowrap'>
+													{formatDateTime(
+														recipient.createdAt
 													)}
-												</Link>
-											</td>
-											<td>
-												<span
-													className={`badge gap-1 ${info.className}`}
-												>
-													<Icon size={14} />
-													{info.label}
-												</span>
-											</td>
-											<td className='max-w-md whitespace-normal break-words'>
-												{recipient.errorMessage || '—'}
-											</td>
-											<td className='whitespace-nowrap'>
-												{formatDateTime(
-													recipient.createdAt
-												)}
-											</td>
-										</tr>
-									)
+												</td>
+											</tr>
+										)
 									})
 								)}
 							</tbody>
