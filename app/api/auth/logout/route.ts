@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 
+import { clearAuthCookies } from '@/shared/api/auth'
+
 export async function POST() {
-	const r = NextResponse.json({ ok: true })
-	r.cookies.delete('admin_access_token')
-	return r
+	const res = NextResponse.json({ ok: true })
+	clearAuthCookies(res)
+	return res
 }
