@@ -120,6 +120,15 @@ export type SchedulerSettingsRequest = {
 	sortOrder: string
 	categoryId: number
 }
+export type CityProvider = 'KUFAR' | 'REALT' | 'ONLINER'
+export type City = {
+	id: number
+	provider: CityProvider
+	name: string
+	cityCode: string
+	createdAt: string
+	updatedAt: string
+}
 export type Feedback = {
 	id: number
 	userId: number

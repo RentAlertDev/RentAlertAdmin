@@ -1,4 +1,4 @@
-import { AlertCircle, LoaderCircle } from 'lucide-react'
+import { AlertCircle, LoaderCircle, RefreshCcw } from 'lucide-react'
 
 export function LoadingState() {
 	return (
@@ -9,14 +9,23 @@ export function LoadingState() {
 	)
 }
 export function ErrorState({
-	message = 'Не удалось загрузить данные'
+	message = 'Не удалось загрузить данные',
+	onRetry
 }: {
 	message?: string
+	onRetry?: () => void
 }) {
 	return (
-		<div className='card flex min-h-48 items-center justify-center text-red-600'>
-			<AlertCircle className='mr-2' />
-			{message}
+		<div className='card flex min-h-48 flex-col items-center justify-center gap-3 p-6 text-red-600'>
+			<div className='flex items-center'>
+				<AlertCircle className='mr-2' />
+				{message}
+			</div>
+			{onRetry && (
+				<button className='btn btn-soft' onClick={onRetry}>
+					<RefreshCcw size={16} /> Повторить
+				</button>
+			)}
 		</div>
 	)
 }

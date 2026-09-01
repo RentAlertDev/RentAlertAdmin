@@ -7,6 +7,7 @@ export const APP_ROUTES = {
 		USERS: '/admin/users',
 		JOBS: '/admin/jobs',
 		FEEDBACKS: '/admin/feedbacks',
+		CITIES: '/admin/cities',
 		BROADCASTS: '/admin/broadcasts',
 		AUDIT: '/admin/audit',
 		SCHEDULERS: '/admin/scheduler-settings',
