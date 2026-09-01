@@ -51,15 +51,32 @@ export type UserActivityLog = {
 	eventDate: string
 	count: number
 }
+export type FilterCurrency = 'USD' | 'BYN' | 'EUR'
+export type UserFilter = {
+	id: number
+	priceFrom?: number | null
+	priceTo?: number | null
+	roomsFrom?: number | null
+	roomsTo?: number | null
+	areaFrom?: number | null
+	areaTo?: number | null
+	active: boolean
+	currency: FilterCurrency
+	createdAt: string
+	updatedAt?: string
+}
 export type UserProfile = {
 	userId: number
 	username: string
 	photoUrl?: string
-	botStatus: 'ACTIVE' | 'PAUSED' | 'STOPPED'
+	botStatus: 'ACTIVE' | 'PAUSED' | 'STOPPED' | 'BLOCKED'
 	roleName?: 'USER' | 'ADMIN' | 'BLOCKED'
 	lastLogin?: string
 	quietFrom?: string
 	quietTo?: string
+	registeredAt?: string
+	activeFilters: UserFilter[]
+	recentFeedbacks: Feedback[]
 }
 export type JobSetting = {
 	jobName: string
@@ -207,7 +224,7 @@ export type Feedback = {
 	id: number
 	userId: number
 	username: string
-	message: string
+	message?: string | null
 	rating: number
 	createdAt: string
 	updatedAt?: string

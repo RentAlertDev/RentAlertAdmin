@@ -9,6 +9,7 @@ import {
 	LogIn,
 	MessageSquare,
 	SlidersHorizontal,
+	Star,
 	Trash2
 } from 'lucide-react'
 import Image from 'next/image'
@@ -33,12 +34,16 @@ import { APP_ROUTES } from '@/shared/config/routes'
 import {
 	dateInput,
 	daysAgo,
+	formatDate,
 	formatDateTime,
+	formatRange,
 	initials
 } from '@/shared/lib/format'
 import type {
+	Feedback,
 	UserActionSummary,
 	UserActivityLog,
+	UserFilter,
 	UserProfile
 } from '@/shared/model/types'
 import {
@@ -171,8 +176,8 @@ export function UserDetail({ userId }: { userId: number }) {
 						<Status value={p.botStatus} />
 					</div>
 					<p className='text-slate-500'>
-						ID {p.userId} · Последний вход{' '}
-						{formatDateTime(p.lastLogin)}
+						ID {p.userId} · Регистрация {formatDate(p.registeredAt)}{' '}
+						· Последний вход {formatDateTime(p.lastLogin)}
 					</p>
 				</div>
 				<div className='rounded-xl bg-slate-50 p-4'>
@@ -310,6 +315,10 @@ export function UserDetail({ userId }: { userId: number }) {
 					</ResponsiveContainer>
 				</div>
 			</section>
+			<div className='grid gap-6 lg:grid-cols-2'>
+				<FiltersCard filters={p.activeFilters} />
+				<FeedbacksCard feedbacks={p.recentFeedbacks} />
+			</div>
 			{confirm && (
 				<div className='fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-5'>
 					<div
@@ -377,5 +386,109 @@ function Metric({
 			<div className='mt-3 text-2xl font-bold'>{value || 0}</div>
 			<div className='text-xs text-slate-500'>{label}</div>
 		</div>
+	)
+}
+function Stars({ rating }: { rating: number }) {
+	return (
+		<div className='flex text-amber-400'>
+			{[1, 2, 3, 4, 5].map(x => (
+				<Star
+					key={x}
+					size={15}
+					fill={x <= rating ? 'currentColor' : 'none'}
+					className={x > rating ? 'text-slate-200' : ''}
+				/>
+			))}
+		</div>
+	)
+}
+function FiltersCard({ filters }: { filters?: UserFilter[] }) {
+	const items = filters ?? []
+	return (
+		<section className='card p-5'>
+			<div className='mb-4 flex items-center gap-2'>
+				<SlidersHorizontal size={18} className='text-indigo-600' />
+				<h2 className='text-lg font-bold'>Активные фильтры</h2>
+				<span className='text-sm text-slate-400'>{items.length}</span>
+			</div>
+			{items.length === 0 ? (
+				<p className='text-sm text-slate-500'>Нет активных фильтров</p>
+			) : (
+				<ul className='space-y-3'>
+					{items.map(f => (
+						<li key={f.id} className='rounded-xl bg-slate-50 p-4'>
+							<dl className='grid grid-cols-3 gap-2 text-sm'>
+								<div>
+									<dt className='text-xs text-slate-400'>
+										Цена
+									</dt>
+									<dd className='font-semibold'>
+										{formatRange(
+											f.priceFrom,
+											f.priceTo,
+											f.currency
+										)}
+									</dd>
+								</div>
+								<div>
+									<dt className='text-xs text-slate-400'>
+										Комнаты
+									</dt>
+									<dd className='font-semibold'>
+										{formatRange(f.roomsFrom, f.roomsTo)}
+									</dd>
+								</div>
+								<div>
+									<dt className='text-xs text-slate-400'>
+										Площадь, м²
+									</dt>
+									<dd className='font-semibold'>
+										{formatRange(f.areaFrom, f.areaTo)}
+									</dd>
+								</div>
+							</dl>
+							<div className='mt-2 text-xs text-slate-400'>
+								Создан {formatDateTime(f.createdAt)}
+							</div>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
+	)
+}
+function FeedbacksCard({ feedbacks }: { feedbacks?: Feedback[] }) {
+	const items = feedbacks ?? []
+	return (
+		<section className='card p-5'>
+			<div className='mb-4 flex items-center gap-2'>
+				<MessageSquare size={18} className='text-indigo-600' />
+				<h2 className='text-lg font-bold'>Отзывы</h2>
+				<span className='text-sm text-slate-400'>{items.length}</span>
+			</div>
+			{items.length === 0 ? (
+				<p className='text-sm text-slate-500'>Нет отзывов</p>
+			) : (
+				<ul className='space-y-3'>
+					{items.map(f => (
+						<li key={f.id} className='rounded-xl bg-slate-50 p-4'>
+							<div className='flex items-center justify-between gap-3'>
+								<Stars rating={f.rating} />
+								<span className='text-xs text-slate-400'>
+									{formatDateTime(f.createdAt)}
+								</span>
+							</div>
+							<p className='mt-2 text-sm break-words whitespace-normal'>
+								{f.message || (
+									<span className='text-slate-400'>
+										Без текста
+									</span>
+								)}
+							</p>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
 	)
 }

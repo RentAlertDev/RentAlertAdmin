@@ -103,99 +103,118 @@ export function FeedbacksPage() {
 									</tr>
 								) : (
 									query.data.content.map(f => {
-									const expanded = open.has(f.id)
-									return (
-										<tr key={f.id}>
-											<td className='overflow-hidden'>
-												<b className='block truncate'>
-													@
-													{f.username ||
-														'без username'}
-												</b>
-												<div className='text-xs text-slate-400'>
-													ID {f.userId}
-												</div>
-											</td>
-											<td>
-												<div className='flex text-amber-400'>
-													{[1, 2, 3, 4, 5].map(x => (
-														<Star
-															key={x}
-															size={17}
-															fill={
-																x <= f.rating
-																	? 'currentColor'
-																	: 'none'
-															}
-															className={
-																x > f.rating
-																	? 'text-slate-200'
-																	: ''
-															}
-														/>
-													))}
-												</div>
-											</td>
-											<td className='min-w-0 overflow-hidden'>
-												<p
-													className={`break-all whitespace-normal ${expanded ? '' : 'line-clamp-2'}`}
-												>
-													{f.message}
-												</p>
-												{f.message?.length > 120 && (
-													<button
-														className='mt-1 flex items-center gap-1 text-xs font-bold text-indigo-600'
-														onClick={() =>
-															setOpen(x => {
-																const n =
-																	new Set(x)
-																if (n.has(f.id))
-																	n.delete(
-																		f.id
-																	)
-																else n.add(f.id)
-																return n
-															})
-														}
-													>
-														{expanded ? (
-															<>
-																<ChevronUp
-																	size={14}
+										const expanded = open.has(f.id)
+										return (
+											<tr key={f.id}>
+												<td className='overflow-hidden'>
+													<b className='block truncate'>
+														@
+														{f.username ||
+															'без username'}
+													</b>
+													<div className='text-xs text-slate-400'>
+														ID {f.userId}
+													</div>
+												</td>
+												<td>
+													<div className='flex text-amber-400'>
+														{[1, 2, 3, 4, 5].map(
+															x => (
+																<Star
+																	key={x}
+																	size={17}
+																	fill={
+																		x <=
+																		f.rating
+																			? 'currentColor'
+																			: 'none'
+																	}
+																	className={
+																		x >
+																		f.rating
+																			? 'text-slate-200'
+																			: ''
+																	}
 																/>
-																Свернуть
-															</>
-														) : (
-															<>
-																<ChevronDown
-																	size={14}
-																/>
-																Показать целиком
-															</>
+															)
 														)}
-													</button>
-												)}
-											</td>
-											<td className='whitespace-nowrap'>
-												<div>
-													{formatDateTime(
-														f.createdAt
-													)}
-												</div>
-												{f.updatedAt &&
-													f.updatedAt !==
-														f.createdAt && (
-														<div className='text-xs text-slate-400'>
-															изм.{' '}
-															{formatDateTime(
-																f.updatedAt
+													</div>
+												</td>
+												<td className='min-w-0 overflow-hidden'>
+													<p
+														className={`break-all whitespace-normal ${expanded ? '' : 'line-clamp-2'}`}
+													>
+														{f.message}
+													</p>
+													{(f.message?.length ?? 0) >
+														120 && (
+														<button
+															className='mt-1 flex items-center gap-1 text-xs font-bold text-indigo-600'
+															onClick={() =>
+																setOpen(x => {
+																	const n =
+																		new Set(
+																			x
+																		)
+																	if (
+																		n.has(
+																			f.id
+																		)
+																	)
+																		n.delete(
+																			f.id
+																		)
+																	else
+																		n.add(
+																			f.id
+																		)
+																	return n
+																})
+															}
+														>
+															{expanded ? (
+																<>
+																	<ChevronUp
+																		size={
+																			14
+																		}
+																	/>
+																	Свернуть
+																</>
+															) : (
+																<>
+																	<ChevronDown
+																		size={
+																			14
+																		}
+																	/>
+																	Показать
+																	целиком
+																</>
 															)}
-														</div>
+														</button>
 													)}
-											</td>
-										</tr>
-									)
-								})
+												</td>
+												<td className='whitespace-nowrap'>
+													<div>
+														{formatDateTime(
+															f.createdAt
+														)}
+													</div>
+													{f.updatedAt &&
+														f.updatedAt !==
+															f.createdAt && (
+															<div className='text-xs text-slate-400'>
+																изм.{' '}
+																{formatDateTime(
+																	f.updatedAt
+																)}
+															</div>
+														)}
+												</td>
+											</tr>
+										)
+									})
 								)}
 							</tbody>
 						</table>

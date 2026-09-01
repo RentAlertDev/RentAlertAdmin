@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ArrowDownUp, Search } from 'lucide-react'
+import { ArrowDownUp, Search, SlidersHorizontal, Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { api } from '@/shared/api/http-client'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { useDebouncedValue } from '@/shared/hooks/use-debounced-value'
-import { formatDateTime, initials } from '@/shared/lib/format'
+import { formatDate, formatDateTime, initials } from '@/shared/lib/format'
 import {
 	type SpringPageResponse,
 	normalizePage
@@ -115,6 +115,17 @@ export function UsersList() {
 										<button
 											className='flex items-center gap-1'
 											onClick={() =>
+												toggleSort('registeredAt')
+											}
+										>
+											Дата регистрации{' '}
+											<ArrowDownUp size={14} />
+										</button>
+									</th>
+									<th>
+										<button
+											className='flex items-center gap-1'
+											onClick={() =>
 												toggleSort('lastLogin')
 											}
 										>
@@ -123,15 +134,16 @@ export function UsersList() {
 										</button>
 									</th>
 									<th>Тихие часы</th>
+									<th>Активность</th>
 									<th>Действия</th>
 								</tr>
 							</thead>
 							<tbody>
 								{query.isLoading ? (
-									<TableSkeleton columns={5} />
+									<TableSkeleton columns={7} />
 								) : users.length === 0 ? (
 									<tr>
-										<td colSpan={5}>
+										<td colSpan={7}>
 											<EmptyState message='Пользователи не найдены' />
 										</td>
 									</tr>
@@ -171,6 +183,9 @@ export function UsersList() {
 											<td>
 												<Status value={u.botStatus} />
 											</td>
+											<td className='whitespace-nowrap'>
+												{formatDate(u.registeredAt)}
+											</td>
 											<td>
 												{formatDateTime(u.lastLogin)}
 											</td>
@@ -178,6 +193,9 @@ export function UsersList() {
 												{u.quietFrom && u.quietTo
 													? `${u.quietFrom} – ${u.quietTo}`
 													: '—'}
+											</td>
+											<td>
+												<ActivityBadges user={u} />
 											</td>
 											<td>
 												<Link
@@ -204,6 +222,37 @@ export function UsersList() {
 					onPageSizeChange={changePageSize}
 				/>
 			</div>
+		</div>
+	)
+}
+function ActivityBadges({ user }: { user: UserProfile }) {
+	const filters = user.activeFilters?.length ?? 0
+	const feedbacks = user.recentFeedbacks ?? []
+	const avg = feedbacks.length
+		? feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length
+		: null
+	if (!filters && avg == null)
+		return <span className='text-slate-300'>—</span>
+	return (
+		<div className='flex flex-wrap items-center gap-2'>
+			{filters > 0 && (
+				<span
+					className='badge gap-1 bg-indigo-50 text-indigo-700'
+					title='Активные фильтры'
+				>
+					<SlidersHorizontal size={13} />
+					{filters}
+				</span>
+			)}
+			{avg != null && (
+				<span
+					className='badge gap-1 bg-amber-50 text-amber-700'
+					title='Средний рейтинг последних отзывов'
+				>
+					<Star size={13} fill='currentColor' />
+					{avg.toFixed(1)}
+				</span>
+			)}
 		</div>
 	)
 }

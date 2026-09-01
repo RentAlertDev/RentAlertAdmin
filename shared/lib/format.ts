@@ -19,5 +19,16 @@ export const formatDate = (value?: string | null) =>
 		: '—'
 export const formatDuration = (ms?: number | null) =>
 	ms == null ? '—' : ms < 1000 ? `${ms} мс` : `${(ms / 1000).toFixed(2)} сек`
+export const formatRange = (
+	from?: number | null,
+	to?: number | null,
+	unit?: string
+) => {
+	const u = unit ? ` ${unit}` : ''
+	if (from == null && to == null) return '—'
+	if (from != null && to != null) return `${from} – ${to}${u}`
+	if (from != null) return `от ${from}${u}`
+	return `до ${to}${u}`
+}
 export const initials = (name?: string | null) =>
 	(name || 'U').replace('@', '').slice(0, 2).toUpperCase()
