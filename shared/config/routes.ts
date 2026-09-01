@@ -8,6 +8,7 @@ export const APP_ROUTES = {
 		JOBS: '/admin/jobs',
 		FEEDBACKS: '/admin/feedbacks',
 		CITIES: '/admin/cities',
+		LISTINGS: '/admin/listings',
 		BROADCASTS: '/admin/broadcasts',
 		AUDIT: '/admin/audit',
 		SCHEDULERS: '/admin/scheduler-settings',

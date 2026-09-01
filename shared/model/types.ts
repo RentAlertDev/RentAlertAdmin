@@ -121,6 +121,79 @@ export type SchedulerSettingsRequest = {
 	categoryId: number
 }
 export type CityProvider = 'KUFAR' | 'REALT' | 'ONLINER'
+export type ListingProvider = CityProvider
+
+export type ListingProviderStat = {
+	provider: ListingProvider
+	total: number
+	active: number
+	inactive: number
+	sharePercent: number
+	lastParsedAt?: string
+	minutesSinceLastParsed?: number
+}
+export type ListingCityStat = {
+	city?: string
+	total: number
+	active: number
+}
+export type ListingCityProviderStat = {
+	city?: string
+	provider: ListingProvider
+	total: number
+}
+export type ListingDailyArrival = {
+	date: string
+	total: number
+	byProvider: Partial<Record<ListingProvider, number>>
+}
+export type ListingPeriodStats = {
+	since: string
+	until: string
+	days: number
+	newTotal: number
+	newPerDay: number
+	newByProvider: {
+		provider: ListingProvider
+		count: number
+		perDay: number
+	}[]
+	newByCity: { city?: string; count: number; perDay: number }[]
+	newByCityAndProvider: {
+		city?: string
+		provider: ListingProvider
+		count: number
+		perDay: number
+	}[]
+	dailyArrivals: ListingDailyArrival[]
+}
+export type ListingPriceStat = {
+	currency: 'USD' | 'BYN' | 'EUR'
+	count: number
+	avgPrice: number
+	minPrice: number
+	maxPrice: number
+}
+export type ListingStatisticsOverview = {
+	totalListings: number
+	activeListings: number
+	inactiveListings: number
+	byProvider: ListingProviderStat[]
+	byCity: ListingCityStat[]
+	byCityAndProvider: ListingCityProviderStat[]
+	period: ListingPeriodStats
+	newLast24h: number
+	newLast7d: number
+	newLast30d: number
+	staleProviders: ListingProvider[]
+	priceStats: ListingPriceStat[]
+	roomsDistribution: Record<string, number>
+	dataQuality: {
+		withoutCity: number
+		withoutPrice: number
+		withoutPhotos: number
+	}
+}
 export type City = {
 	id: number
 	provider: CityProvider

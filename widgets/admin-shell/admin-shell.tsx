@@ -2,6 +2,7 @@
 
 import {
 	BarChart3,
+	Building2,
 	ClipboardList,
 	LogOut,
 	MapPin,
@@ -28,6 +29,7 @@ const links = [
 	{ href: APP_ROUTES.ADMIN.SCHEDULERS, label: 'Планировщики', icon: Timer },
 	{ href: APP_ROUTES.ADMIN.FEEDBACKS, label: 'Отзывы', icon: MessageSquare },
 	{ href: APP_ROUTES.ADMIN.CITIES, label: 'Города', icon: MapPin },
+	{ href: APP_ROUTES.ADMIN.LISTINGS, label: 'Объявления', icon: Building2 },
 	{ href: APP_ROUTES.ADMIN.BROADCASTS, label: 'Рассылки', icon: Megaphone },
 	{ href: APP_ROUTES.ADMIN.AUDIT, label: 'Аудит', icon: ClipboardList }
 ]
