@@ -77,8 +77,8 @@ export function CitiesPage() {
 	})
 
 	const setActive = useMutation({
-		mutationFn: ({ id, active }: { id: number; active: boolean }) =>
-			api.patch<City>(`/cities/${id}/active`, { active }),
+		mutationFn: ({ city, active }: { city: City; active: boolean }) =>
+			api.put<City>(`/cities/${city.id}`, { name: city.name, active }),
 		onSuccess: (_, { active }) => {
 			toast.success(active ? 'Город активирован' : 'Город деактивирован')
 			queryClient.invalidateQueries({ queryKey: ['cities'] })
@@ -283,11 +283,11 @@ export function CitiesPage() {
 													pending={
 														setActive.isPending &&
 														setActive.variables
-															?.id === city.id
+															?.city.id === city.id
 													}
 													onToggle={() =>
 														setActive.mutate({
-															id: city.id,
+															city,
 															active: !city.active
 														})
 													}
