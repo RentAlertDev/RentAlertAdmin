@@ -5,6 +5,8 @@ import {
 	ArrowDown,
 	ArrowDownUp,
 	ArrowUp,
+	Check,
+	LoaderCircle,
 	Pencil,
 	Plus,
 	Search,
@@ -35,27 +37,60 @@ import { RefreshButton } from '@/shared/ui/refresh-button'
 const NAME_MAX = 255
 const PAGE_SIZE_OPTIONS = [20, 50, 100]
 const DEFAULT_SORT = ['provider,asc', 'name,asc']
+const COLUMNS = 7
 
 type Editor = { mode: 'create' } | { mode: 'edit'; city: City } | null
+type ActiveFilter = 'all' | 'active' | 'inactive'
+
+const ACTIVE_FILTERS: { value: ActiveFilter; label: string }[] = [
+	{ value: 'all', label: 'Все статусы' },
+	{ value: 'active', label: 'Только активные' },
+	{ value: 'inactive', label: 'Только неактивные' }
+]
 
 export function CitiesPage() {
 	const [page, setPage] = useState(0)
 	const [pageSize, setPageSize] = useState(20)
 	const [sort, setSort] = useState<string[]>(DEFAULT_SORT)
 	const [search, setSearch] = useState('')
+	const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all')
 	const [editor, setEditor] = useState<Editor>(null)
 	const [confirmDelete, setConfirmDelete] = useState<City | null>(null)
 	const queryClient = useQueryClient()
 
 	const query = useQuery({
-		queryKey: ['cities', page, pageSize, sort],
+		queryKey: ['cities', page, pageSize, sort, activeFilter],
 		queryFn: () =>
 			api
 				.get<SpringPageResponse<City>>('/cities', {
-					params: { page, size: pageSize, sort },
+					params: {
+						page,
+						size: pageSize,
+						sort,
+						...(activeFilter === 'all'
+							? {}
+							: { active: activeFilter === 'active' })
+					},
 					paramsSerializer: { indexes: null }
 				})
 				.then(response => normalizePage(response.data))
+	})
+
+	const setActive = useMutation({
+		mutationFn: ({ id, active }: { id: number; active: boolean }) =>
+			api.patch<City>(`/cities/${id}/active`, { active }),
+		onSuccess: (_, { active }) => {
+			toast.success(active ? 'Город активирован' : 'Город деактивирован')
+			queryClient.invalidateQueries({ queryKey: ['cities'] })
+		},
+		onError: error => {
+			if (apiStatus(error) === 404) {
+				toast.error('Город не найден — возможно, уже удалён')
+				queryClient.invalidateQueries({ queryKey: ['cities'] })
+				return
+			}
+			toast.error(apiErrorMessage(error, 'Не удалось изменить статус'))
+		}
 	})
 
 	const remove = useMutation({
@@ -91,6 +126,10 @@ export function CitiesPage() {
 		setPageSize(value)
 		setPage(0)
 	}
+	const changeActiveFilter = (value: ActiveFilter) => {
+		setActiveFilter(value)
+		setPage(0)
+	}
 
 	const term = search.trim().toLowerCase()
 	const rows = (query.data?.content ?? []).filter(city =>
@@ -119,17 +158,36 @@ export function CitiesPage() {
 
 			<section className='card'>
 				<div className='flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4'>
-					<div className='relative w-full max-w-sm'>
-						<Search
-							className='absolute left-3 top-3 text-slate-400'
-							size={18}
-						/>
-						<input
-							className='field !pl-10'
-							placeholder='Поиск по названию (на этой странице)…'
-							value={search}
-							onChange={event => setSearch(event.target.value)}
-						/>
+					<div className='flex flex-wrap items-center gap-3'>
+						<div className='relative w-full max-w-sm sm:w-80'>
+							<Search
+								className='absolute left-3 top-3 text-slate-400'
+								size={18}
+							/>
+							<input
+								className='field !pl-10'
+								placeholder='Поиск по названию (на этой странице)…'
+								value={search}
+								onChange={event =>
+									setSearch(event.target.value)
+								}
+							/>
+						</div>
+						<select
+							className='field !w-auto'
+							value={activeFilter}
+							onChange={event =>
+								changeActiveFilter(
+									event.target.value as ActiveFilter
+								)
+							}
+						>
+							{ACTIVE_FILTERS.map(option => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</select>
 					</div>
 					<span className='text-sm text-slate-500'>
 						Всего: {query.data?.totalElements ?? 0}
@@ -178,21 +236,22 @@ export function CitiesPage() {
 										activeDir={primaryDir}
 										onSort={toggleSort}
 									/>
+									<th>Статус</th>
 									<th className='text-right'>Действия</th>
 								</tr>
 							</thead>
 							<tbody>
 								{query.isLoading ? (
-									<TableSkeleton columns={6} />
+									<TableSkeleton columns={COLUMNS} />
 								) : !query.data?.content?.length ? (
 									<tr>
-										<td colSpan={6}>
+										<td colSpan={COLUMNS}>
 											<EmptyState message='Справочник городов пуст' />
 										</td>
 									</tr>
 								) : !rows.length ? (
 									<tr>
-										<td colSpan={6}>
+										<td colSpan={COLUMNS}>
 											<EmptyState message='На этой странице ничего не найдено' />
 										</td>
 									</tr>
@@ -217,6 +276,22 @@ export function CitiesPage() {
 											</td>
 											<td className='whitespace-nowrap'>
 												{formatDateTime(city.updatedAt)}
+											</td>
+											<td>
+												<StatusToggle
+													active={city.active}
+													pending={
+														setActive.isPending &&
+														setActive.variables
+															?.id === city.id
+													}
+													onToggle={() =>
+														setActive.mutate({
+															id: city.id,
+															active: !city.active
+														})
+													}
+												/>
 											</td>
 											<td>
 												<div className='flex justify-end gap-2'>
@@ -349,6 +424,38 @@ function SortableTh({
 	)
 }
 
+function StatusToggle({
+	active,
+	pending,
+	onToggle
+}: {
+	active: boolean
+	pending: boolean
+	onToggle: () => void
+}) {
+	return (
+		<button
+			className={`badge gap-1 ${active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}
+			disabled={pending}
+			onClick={onToggle}
+			title={
+				active
+					? 'Нажмите, чтобы деактивировать'
+					: 'Нажмите, чтобы активировать'
+			}
+		>
+			{pending ? (
+				<LoaderCircle size={12} className='animate-spin' />
+			) : active ? (
+				<Check size={12} />
+			) : (
+				<X size={12} />
+			)}
+			{active ? 'Активен' : 'Неактивен'}
+		</button>
+	)
+}
+
 type FormErrors = { name?: string; cityCode?: string; provider?: string }
 
 function CityFormModal({
@@ -367,6 +474,7 @@ function CityFormModal({
 	)
 	const [name, setName] = useState(existing?.name ?? '')
 	const [cityCode, setCityCode] = useState(existing?.cityCode ?? '')
+	const [active, setActive] = useState(existing?.active ?? true)
 	const [errors, setErrors] = useState<FormErrors>({})
 	const [formError, setFormError] = useState<string | null>(null)
 	const [errorId, setErrorId] = useState<string | undefined>()
@@ -376,14 +484,16 @@ function CityFormModal({
 			isEdit
 				? api
 						.put<City>(`/cities/${existing!.id}`, {
-							name: name.trim()
+							name: name.trim(),
+							active
 						})
 						.then(response => response.data)
 				: api
 						.post<City>('/cities', {
 							provider,
 							name: name.trim(),
-							cityCode: cityCode.trim()
+							cityCode: cityCode.trim(),
+							active
 						})
 						.then(response => response.data),
 		onSuccess: () => {
@@ -506,6 +616,16 @@ function CityFormModal({
 							placeholder='minsk'
 						/>
 					</Field>
+
+					<label className='flex items-center gap-2 text-sm font-semibold'>
+						<input
+							type='checkbox'
+							className='h-4 w-4'
+							checked={active}
+							onChange={event => setActive(event.target.checked)}
+						/>
+						Активен
+					</label>
 
 					{formError && (
 						<div className='rounded-lg bg-red-50 p-3 text-sm text-red-600'>

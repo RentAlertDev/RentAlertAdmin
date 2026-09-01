@@ -126,6 +126,7 @@ export type City = {
 	provider: CityProvider
 	name: string
 	cityCode: string
+	active: boolean
 	createdAt: string
 	updatedAt: string
 }
