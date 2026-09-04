@@ -12,6 +12,7 @@ export const APP_ROUTES = {
 		BROADCASTS: '/admin/broadcasts',
 		AUDIT: '/admin/audit',
 		SCHEDULERS: '/admin/scheduler-settings',
+		ROOMMATE_MODERATION: '/admin/roommate-moderation',
 		broadcast: (broadcastId: number | string) =>
 			`/admin/broadcasts/${broadcastId}`,
 		user: (userId: number | string) => `/admin/users/${userId}`

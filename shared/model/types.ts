@@ -248,6 +248,19 @@ export type BroadcastResult = {
 	failed: number
 	skipped: number
 }
+export type RoommateModerationSubjectType = 'PROFILE' | 'LISTING'
+export type RoommateModerationField = 'bio' | 'description' | 'report'
+export type RoommateModerationTask = {
+	id: number
+	subjectType: RoommateModerationSubjectType
+	subjectId: number
+	field: RoommateModerationField
+	submittedText?: string | null
+	status: 'PENDING_MANUAL'
+	reviewerId?: number | null
+	decisionReason?: string | null
+	createdAt: string
+}
 export type BroadcastRecipient = {
 	id: number
 	userId: number
